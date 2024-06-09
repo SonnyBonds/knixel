@@ -1,0 +1,44 @@
+[gd_scene load_steps=3 format=3 uid="uid://cqci16iiq51ie"]
+
+[ext_resource type="Script" path="res://src/ui/color_box.gd" id="1_nsf73"]
+[ext_resource type="PackedScene" uid="uid://0im4n2acuff4" path="res://src/ui/color_picker.tscn" id="2_stoks"]
+
+[node name="ColorBox" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 24.0
+offset_bottom = 24.0
+script = ExtResource("1_nsf73")
+
+[node name="ColorRect" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"ColorBox"
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+theme_type_variation = &"ColorBoxButton"
+
+[node name="Popup" type="PopupPanel" parent="."]
+auto_translate_mode = 1
+disable_3d = true
+title = "Color"
+size = Vector2i(400, 284)
+
+[node name="ColorPicker" parent="Popup" instance=ExtResource("2_stoks")]
+unique_name_in_owner = true
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 396.0
+offset_bottom = 280.0

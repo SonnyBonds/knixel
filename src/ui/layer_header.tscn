@@ -1,0 +1,54 @@
+[gd_scene load_steps=4 format=3 uid="uid://dgyaawgel00c7"]
+
+[ext_resource type="PackedScene" uid="uid://i4qy6jsprmux" path="res://src/ui/spintext.tscn" id="1_5xbfa"]
+[ext_resource type="Script" path="res://src/ui/layer_header.gd" id="1_oli20"]
+[ext_resource type="PackedScene" uid="uid://ott7of8ci8yr" path="res://src/ui/drop_down.tscn" id="3_6gfrg"]
+
+[node name="LayerHeader" type="HBoxContainer"]
+custom_minimum_size = Vector2(0, 24)
+anchors_preset = 10
+anchor_right = 1.0
+offset_right = -1175.0
+offset_bottom = 24.0
+grow_horizontal = 2
+theme_override_constants/separation = 5
+script = ExtResource("1_oli20")
+
+[node name="Padding" type="Control" parent="."]
+custom_minimum_size = Vector2(3, 0)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "Opacity:"
+
+[node name="OpacityEdit" parent="." instance=ExtResource("1_5xbfa")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(55, 16)
+layout_mode = 2
+size_flags_vertical = 4
+display_rounded = true
+unit = " %"
+
+[node name="LineEdit" parent="OpacityEdit" index="0"]
+theme_override_font_sizes/font_size = 10
+
+[node name="BlendModeDropDown" parent="." instance=ExtResource("3_6gfrg")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 10
+text = "Normal"
+text_overrun_behavior = 1
+
+[node name="PopupMenu" parent="BlendModeDropDown" index="0"]
+theme_override_font_sizes/font_size = 10
+
+[node name="Padding2" type="Control" parent="."]
+custom_minimum_size = Vector2(3, 0)
+layout_mode = 2
+
+[editable path="OpacityEdit"]
+[editable path="BlendModeDropDown"]

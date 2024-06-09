@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://ott7of8ci8yr"]
+
+[ext_resource type="Texture2D" uid="uid://c0rbtoawd5e1m" path="res://icons/down.svg" id="1_vgm7m"]
+[ext_resource type="Script" path="res://src/ui/drop_down.gd" id="2_5bkls"]
+
+[node name="DropDown" type="Button"]
+offset_right = 70.0
+offset_bottom = 16.0
+size_flags_vertical = 4
+theme_type_variation = &"DropDownButton"
+icon = ExtResource("1_vgm7m")
+alignment = 0
+icon_alignment = 2
+script = ExtResource("2_5bkls")
+
+[node name="PopupMenu" type="PopupMenu" parent="."]
+unique_name_in_owner = true
+theme_type_variation = &"DropDownMenu"

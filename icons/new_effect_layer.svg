@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)"
+   sodipodi:docname="new_effect_layer.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="px"
+     showgrid="true"
+     inkscape:zoom="36.4375"
+     inkscape:cx="4.9674099"
+     inkscape:cy="7.6981132"
+     inkscape:window-width="1440"
+     inkscape:window-height="831"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="0.5"
+       spacingy="0.5"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       dotted="false"
+       gridanglex="30"
+       gridanglez="30"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="font-style:oblique;font-weight:bold;font-size:10.6667px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans Bold Oblique';fill:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dashoffset:1"
+       d="M 3.0156297,4.2239338 H 8.4218968 L 8.1250209,5.7395636 H 4.7239685 L 4.4427176,7.1874848 H 7.6458527 L 7.3437684,8.7031146 H 4.1458416 L 3.5052146,12 H 1.5 Z"
+       id="text1"
+       aria-label="F" />
+    <path
+       style="font-style:oblique;font-weight:bold;font-size:10.6667px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans Bold Oblique';fill:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dashoffset:1"
+       d="M 11.475444,8.0624876 13.3817,12 H 11.345235 L 10.079606,9.3958251 7.8035569,12 H 5.6420918 L 9.1368945,8.0104041 7.2931387,4.2239338 h 2.0468814 l 1.1979209,2.442716 2.130215,-2.442716 h 2.17709 z"
+       id="text1-6"
+       aria-label="X" />
+  </g>
+</svg>

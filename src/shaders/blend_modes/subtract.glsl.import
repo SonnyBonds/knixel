@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://chuhbhgqf1lye"
+path="res://.godot/imported/subtract.glsl-78ecf3e0a8b84b545645813e9483b8e1.res"
+
+[deps]
+
+source_file="res://src/shaders/blend_modes/subtract.glsl"
+dest_files=["res://.godot/imported/subtract.glsl-78ecf3e0a8b84b545645813e9483b8e1.res"]
+
+[params]
+

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://c0fb2rtk1bcju"
+path="res://.godot/imported/difference.glsl-5ffc242a45a0f0390244142f94a57fe7.res"
+
+[deps]
+
+source_file="res://src/shaders/blend_modes/difference.glsl"
+dest_files=["res://.godot/imported/difference.glsl-5ffc242a45a0f0390244142f94a57fe7.res"]
+
+[params]
+

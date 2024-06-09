@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bij8tus84isix"
+path="res://.godot/imported/output_colored_mask.glsl-bf430180a610f4aaaa09d11a23659fd7.res"
+
+[deps]
+
+source_file="res://src/shaders/operations/output_colored_mask.glsl"
+dest_files=["res://.godot/imported/output_colored_mask.glsl-bf430180a610f4aaaa09d11a23659fd7.res"]
+
+[params]
+

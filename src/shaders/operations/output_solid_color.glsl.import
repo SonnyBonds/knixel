@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bi8pivg5383wp"
+path="res://.godot/imported/output_solid_color.glsl-68160e86416ac7329e63efe56f9dc198.res"
+
+[deps]
+
+source_file="res://src/shaders/operations/output_solid_color.glsl"
+dest_files=["res://.godot/imported/output_solid_color.glsl-68160e86416ac7329e63efe56f9dc198.res"]
+
+[params]
+

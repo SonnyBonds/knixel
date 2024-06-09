@@ -1,0 +1,318 @@
+[gd_scene load_steps=23 format=3 uid="uid://djijed1j0fltc"]
+
+[ext_resource type="Script" path="res://src/main.gd" id="1_2kqib"]
+[ext_resource type="Texture2D" uid="uid://v8x5oroetip3" path="res://icons/tool_move.svg" id="2_pcivx"]
+[ext_resource type="Script" path="res://src/ui/tool_button.gd" id="3_q3wib"]
+[ext_resource type="Script" path="res://src/tools/move.gd" id="4_10xf6"]
+[ext_resource type="Texture2D" uid="uid://hlw7u80036" path="res://icons/tool_select.svg" id="5_75vbs"]
+[ext_resource type="Script" path="res://src/tools/box_select.gd" id="6_e8kj7"]
+[ext_resource type="Texture2D" uid="uid://c68yyiwqw3r18" path="res://icons/tool_brush.svg" id="7_o6b3u"]
+[ext_resource type="PackedScene" uid="uid://cqci16iiq51ie" path="res://src/ui/color_box.tscn" id="7_y5x88"]
+[ext_resource type="Texture2D" uid="uid://cyejjlhe1seyt" path="res://icons/reset_colors.svg" id="8_g1e1s"]
+[ext_resource type="Texture2D" uid="uid://bnlygsn4nmthr" path="res://icons/swap_colors.svg" id="8_mirfq"]
+[ext_resource type="Script" path="res://src/tools/brush.gd" id="8_qmp3m"]
+[ext_resource type="Texture2D" uid="uid://s2vvg22i6d0f" path="res://icons/tool_eyedropper.svg" id="9_pbmx0"]
+[ext_resource type="PackedScene" uid="uid://dgyaawgel00c7" path="res://src/ui/layer_header.tscn" id="9_swhc1"]
+[ext_resource type="Script" path="res://src/tools/eyedropper.gd" id="10_dnj8m"]
+[ext_resource type="PackedScene" uid="uid://cxrnrmf00uvwj" path="res://src/ui/layer_footer.tscn" id="14_3d6h1"]
+[ext_resource type="Script" path="res://src/ui/tab_dock_container.gd" id="14_ll8e0"]
+[ext_resource type="PackedScene" uid="uid://np8lq4egxq7p" path="res://src/ui/key_display.tscn" id="15_0wfac"]
+[ext_resource type="PackedScene" uid="uid://doidxxblb7se1" path="res://src/ui/layer_list.tscn" id="15_w025m"]
+[ext_resource type="Script" path="res://src/ui/tool_panel.gd" id="18_27bix"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_53gu5"]
+bg_color = Color(0.184314, 0.184314, 0.184314, 1)
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_ckrl1"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_t4q8r"]
+
+[node name="DocumentRoot" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_2kqib")
+
+[node name="FileOpenDialog" type="FileDialog" parent="."]
+title = "Open a File"
+size = Vector2i(541, 175)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+use_native_dialog = true
+
+[node name="FileSaveDialog" type="FileDialog" parent="."]
+auto_translate_mode = 1
+size = Vector2i(541, 175)
+ok_button_text = "Save"
+access = 2
+use_native_dialog = true
+
+[node name="FileExportDialog" type="FileDialog" parent="."]
+auto_translate_mode = 1
+size = Vector2i(541, 175)
+ok_button_text = "Save"
+access = 2
+use_native_dialog = true
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_53gu5")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 1
+
+[node name="PanelContainer" type="PanelContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="Padding" type="Control" parent="Panel/VBoxContainer/PanelContainer/HBoxContainer"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="MenuBar" type="HBoxContainer" parent="Panel/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="FileMenu" type="MenuButton" parent="Panel/VBoxContainer/PanelContainer/HBoxContainer/MenuBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "File"
+flat = false
+switch_on_hover = true
+
+[node name="EditMenu" type="MenuButton" parent="Panel/VBoxContainer/PanelContainer/HBoxContainer/MenuBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Edit
+"
+flat = false
+switch_on_hover = true
+
+[node name="PanelContainer2" type="Panel" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="Panel/VBoxContainer/PanelContainer2"]
+layout_mode = 2
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("2_pcivx")
+expand_mode = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PanelContainer" type="PanelContainer" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer"]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="ToolBar" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 4
+
+[node name="Move" type="Button" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer/ToolBar"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+action_mode = 0
+button_group = SubResource("ButtonGroup_ckrl1")
+icon = ExtResource("2_pcivx")
+expand_icon = true
+script = ExtResource("3_q3wib")
+tool_type = ExtResource("4_10xf6")
+
+[node name="BoxSelect" type="Button" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer/ToolBar"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+action_mode = 0
+button_group = SubResource("ButtonGroup_t4q8r")
+icon = ExtResource("5_75vbs")
+expand_icon = true
+script = ExtResource("3_q3wib")
+tool_type = ExtResource("6_e8kj7")
+
+[node name="Brush" type="Button" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer/ToolBar"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+action_mode = 0
+button_group = SubResource("ButtonGroup_t4q8r")
+icon = ExtResource("7_o6b3u")
+expand_icon = true
+script = ExtResource("3_q3wib")
+tool_type = ExtResource("8_qmp3m")
+
+[node name="EyeDropper" type="Button" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer/ToolBar"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+action_mode = 0
+button_group = SubResource("ButtonGroup_t4q8r")
+icon = ExtResource("9_pbmx0")
+expand_icon = true
+script = ExtResource("3_q3wib")
+tool_type = ExtResource("10_dnj8m")
+
+[node name="Padding" type="Control" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="Control" type="Control" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+
+[node name="SwapColorsButton" type="Button" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer/Control"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 34.0
+offset_right = 16.0
+offset_bottom = 50.0
+focus_mode = 0
+theme_type_variation = &"IconButton"
+action_mode = 0
+icon = ExtResource("8_mirfq")
+icon_alignment = 1
+
+[node name="ResetColorsButton" type="Button" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer/Control"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 34.0
+offset_right = 32.0
+offset_bottom = 50.0
+focus_mode = 0
+theme_type_variation = &"IconButton"
+action_mode = 0
+icon = ExtResource("8_g1e1s")
+icon_alignment = 1
+
+[node name="BackgroundColorBox" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer/Control" instance=ExtResource("7_y5x88")]
+unique_name_in_owner = true
+layout_mode = 2
+offset_left = 12.0
+offset_top = 16.0
+offset_right = 28.0
+offset_bottom = 32.0
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="ForegroundColorBox" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer/Control" instance=ExtResource("7_y5x88")]
+unique_name_in_owner = true
+layout_mode = 2
+offset_left = 4.0
+offset_top = 12.0
+offset_right = 20.0
+offset_bottom = 28.0
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="Span2" type="Control" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CanvasContainer" type="TabContainer" parent="Panel/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+drag_to_rearrange_enabled = true
+
+[node name="DockPanel" type="Container" parent="Panel/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+mouse_default_cursor_shape = 9
+script = ExtResource("14_ll8e0")
+
+[node name="TabContainer2" type="TabContainer" parent="Panel/VBoxContainer/HBoxContainer/DockPanel"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+drag_to_rearrange_enabled = true
+tabs_rearrange_group = 1
+
+[node name="Tool" type="PanelContainer" parent="Panel/VBoxContainer/HBoxContainer/DockPanel/TabContainer2"]
+layout_mode = 2
+script = ExtResource("18_27bix")
+metadata/_tab_index = 0
+
+[node name="TabContainer" type="TabContainer" parent="Panel/VBoxContainer/HBoxContainer/DockPanel"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+drag_to_rearrange_enabled = true
+tabs_rearrange_group = 1
+
+[node name="Layers" type="PanelContainer" parent="Panel/VBoxContainer/HBoxContainer/DockPanel/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer/DockPanel/TabContainer/Layers"]
+layout_mode = 2
+
+[node name="LayerHeader" parent="Panel/VBoxContainer/HBoxContainer/DockPanel/TabContainer/Layers/VBoxContainer" instance=ExtResource("9_swhc1")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer/HBoxContainer/DockPanel/TabContainer/Layers/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="LayerList" parent="Panel/VBoxContainer/HBoxContainer/DockPanel/TabContainer/Layers/VBoxContainer/ScrollContainer" instance=ExtResource("15_w025m")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="LayerFooter" parent="Panel/VBoxContainer/HBoxContainer/DockPanel/TabContainer/Layers/VBoxContainer" instance=ExtResource("14_3d6h1")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="KeyDisplay" parent="." instance=ExtResource("15_0wfac")]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = -65.0
+offset_right = 91.0
+offset_bottom = -10.0
+grow_vertical = 0

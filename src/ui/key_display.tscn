@@ -1,0 +1,44 @@
+[gd_scene load_steps=3 format=3 uid="uid://np8lq4egxq7p"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pgntd"]
+content_margin_left = 20.0
+content_margin_right = 20.0
+bg_color = Color(0, 0, 0, 0.387)
+
+[sub_resource type="GDScript" id="GDScript_7xhqk"]
+script/source = "extends PanelContainer
+
+@export var enabled : bool = false
+
+var keys : Array[String] = []
+var _timeout : float = 0
+
+func _input(event):
+	if not enabled:
+		return
+		
+	var key_event := event as InputEventKey
+	if key_event and key_event.pressed:
+		$Label.text = key_event.as_text_key_label()
+		visible = true
+		_timeout = 1
+
+func _process(delta):
+	if not enabled:
+		visible = false
+		return
+
+	_timeout -= delta
+	if _timeout <= 0:
+		visible = false
+"
+
+[node name="KeyDisplay" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_pgntd")
+script = SubResource("GDScript_7xhqk")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40

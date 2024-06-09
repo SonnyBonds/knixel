@@ -1,0 +1,107 @@
+[gd_scene load_steps=2 format=3 uid="uid://c558nwwsdgp8h"]
+
+[ext_resource type="Script" path="res://src/ui/new_dialog.gd" id="1_lg5sh"]
+
+[node name="NewDialog" type="Window"]
+auto_translate_mode = 1
+disable_3d = true
+title = "New Image"
+position = Vector2i(0, 61)
+size = Vector2i(250, 120)
+exclusive = true
+script = ExtResource("1_lg5sh")
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -110.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_type_variation = &"ButtonBarContainer"
+
+[node name="CancelButton" type="Button" parent="Panel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancel"
+
+[node name="OkButton" type="Button" parent="Panel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Create"
+
+[node name="GridContainer" type="GridContainer" parent="."]
+offset_left = 60.0
+offset_top = 10.0
+offset_right = 190.0
+offset_bottom = 71.0
+size_flags_horizontal = 8
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+columns = 2
+
+[node name="Label" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Name:"
+horizontal_alignment = 2
+
+[node name="NameEdit" type="LineEdit" parent="GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Untitled"
+alignment = 2
+select_all_on_focus = true
+
+[node name="Label3" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Width:"
+horizontal_alignment = 2
+
+[node name="WidthEdit" type="LineEdit" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+alignment = 2
+max_length = 5
+virtual_keyboard_type = 2
+select_all_on_focus = true
+
+[node name="Label2" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Height:"
+horizontal_alignment = 2
+
+[node name="HeightEdit" type="LineEdit" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+alignment = 2
+max_length = 5
+virtual_keyboard_type = 2
+select_all_on_focus = true

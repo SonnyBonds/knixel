@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)"
+   sodipodi:docname="delete_layer.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="px"
+     showgrid="true"
+     inkscape:zoom="25.765203"
+     inkscape:cx="9.567167"
+     inkscape:cy="8.6356781"
+     inkscape:window-width="1440"
+     inkscape:window-height="831"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="0.5"
+       spacingy="0.5"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       dotted="false"
+       gridanglex="30"
+       gridanglez="30"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:none;stroke:#ffffff;stroke-width:0.695258;stroke-linecap:round;stroke-dashoffset:1"
+       d="m 3.75,4.243854 c 2e-7,-0.5290405 1.90279,-0.9579126 4.25,-0.9579126 2.34721,0 4.25,0.4288721 4.25,0.9579126"
+       id="path2-5" />
+    <path
+       id="path3"
+       style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.772727;stroke-linecap:round;stroke-dasharray:none;stroke-dashoffset:1;stroke-opacity:1"
+       d="m 3.75,4.2645148 c 0,0.5083798 1.9027898,0.9372519 4.25,0.9372519 2.34721,0 4.25,-0.4288721 4.25,-0.9372521 L 11.086911,12.027268 C 11.082912,12.571128 9.702645,13 8,13 6.297355,13 4.9170883,12.571128 4.9130891,12.027268 Z"
+       sodipodi:nodetypes="csccscc" />
+  </g>
+</svg>

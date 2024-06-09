@@ -1,0 +1,40 @@
+[gd_scene load_steps=3 format=3 uid="uid://i4qy6jsprmux"]
+
+[ext_resource type="Script" path="res://src/ui/spintext.gd" id="1_b3eqp"]
+[ext_resource type="Texture2D" uid="uid://c3y06m16epu8m" path="res://icons/updown.svg" id="2_j7tif"]
+
+[node name="SpinText" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 76.0
+offset_bottom = 18.0
+script = ExtResource("1_b3eqp")
+
+[node name="LineEdit" type="LineEdit" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 2
+virtual_keyboard_type = 2
+select_all_on_focus = true
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -16.0
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_horizontal = 2
+mouse_default_cursor_shape = 2
+theme_type_variation = &"SpinTextButton"
+keep_pressed_outside = true
+icon = ExtResource("2_j7tif")
+icon_alignment = 1
+expand_icon = true

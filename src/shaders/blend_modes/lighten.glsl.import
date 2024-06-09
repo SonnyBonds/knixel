@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cu1skj2uuar36"
+path="res://.godot/imported/lighten.glsl-66846f82bd2a4a2b90c64d50379185b0.res"
+
+[deps]
+
+source_file="res://src/shaders/blend_modes/lighten.glsl"
+dest_files=["res://.godot/imported/lighten.glsl-66846f82bd2a4a2b90c64d50379185b0.res"]
+
+[params]
+

@@ -1,0 +1,70 @@
+[gd_scene load_steps=3 format=3 uid="uid://ejonsuwbsvs6"]
+
+[ext_resource type="Script" path="res://src/ui/layer_item.gd" id="1_0mhma"]
+[ext_resource type="PackedScene" uid="uid://b73as78ofg6vx" path="res://src/ui/effect_list.tscn" id="2_nlvp6"]
+
+[node name="LayerItem" type="PanelContainer"]
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -16.0
+offset_bottom = 16.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+script = ExtResource("1_0mhma")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="HeaderPanel" type="PanelContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HeaderPanel"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 5
+
+[node name="Padding" type="Control" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
+layout_mode = 2
+
+[node name="VisibilityButton" type="Button" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+focus_mode = 0
+theme_type_variation = &"VisibilityButton"
+toggle_mode = true
+action_mode = 0
+
+[node name="Icon" type="TextureRect" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+expand_mode = 1
+
+[node name="NameLabel" type="Label" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Layer"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="Padding" type="Control" parent="VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+
+[node name="EffectList" parent="VBoxContainer/HBoxContainer2" instance=ExtResource("2_nlvp6")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://44xo1074w7dg"
+path="res://.godot/imported/darken.glsl-18b62473b07020d0dc2074464a33a3b1.res"
+
+[deps]
+
+source_file="res://src/shaders/blend_modes/darken.glsl"
+dest_files=["res://.godot/imported/darken.glsl-18b62473b07020d0dc2074464a33a3b1.res"]
+
+[params]
+

@@ -1,0 +1,49 @@
+[gd_scene load_steps=4 format=3 uid="uid://fhw6nbsg5p34"]
+
+[ext_resource type="Script" path="res://src/ui/prop_edit.gd" id="1_7o56f"]
+[ext_resource type="PackedScene" uid="uid://i4qy6jsprmux" path="res://src/ui/spintext.tscn" id="2_4oe3d"]
+[ext_resource type="PackedScene" uid="uid://cqci16iiq51ie" path="res://src/ui/color_box.tscn" id="3_rwhn7"]
+
+[node name="PropEdit" type="PanelContainer"]
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -8.5
+offset_bottom = 8.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"PropertyPanel"
+script = ExtResource("1_7o56f")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 10
+text = "Prop"
+text_overrun_behavior = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer"]
+layout_mode = 2
+
+[node name="ValueEdit" parent="HBoxContainer/MarginContainer" instance=ExtResource("2_4oe3d")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="LineEdit" parent="HBoxContainer/MarginContainer/ValueEdit" index="0"]
+theme_override_font_sizes/font_size = 10
+
+[node name="ColorBox" parent="HBoxContainer/MarginContainer" instance=ExtResource("3_rwhn7")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(17, 17)
+layout_mode = 2
+
+[editable path="HBoxContainer/MarginContainer/ValueEdit"]
