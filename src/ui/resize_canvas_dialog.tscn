@@ -1,16 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://chd1lt5co0wcj"]
+[gd_scene load_steps=4 format=3 uid="uid://bjxhcr1utkl23"]
 
-[ext_resource type="Script" path="res://src/ui/resize_dialog.gd" id="1_icvwc"]
-[ext_resource type="Texture2D" uid="uid://cyinnka1vuja5" path="res://icons/size_linked.svg" id="2_1vhwq"]
+[ext_resource type="Script" path="res://src/ui/resize_canvas_dialog.gd" id="1_870cy"]
+[ext_resource type="Texture2D" uid="uid://cyinnka1vuja5" path="res://icons/size_linked.svg" id="2_5osy4"]
 
-[node name="ResizeDialog" type="Window"]
+[sub_resource type="ButtonGroup" id="ButtonGroup_sgfwq"]
+
+[node name="ResizeCanvasDialog" type="Window"]
 auto_translate_mode = 1
 disable_3d = true
-title = "Resize Image"
+title = "Resize Canvas"
 position = Vector2i(0, 61)
-size = Vector2i(300, 100)
+size = Vector2i(300, 125)
 exclusive = true
-script = ExtResource("1_icvwc")
+script = ExtResource("1_870cy")
 
 [node name="Panel" type="Panel" parent="."]
 anchors_preset = 15
@@ -135,6 +137,11 @@ layout_mode = 2
 text = "%"
 horizontal_alignment = 2
 
+[node name="Label11" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Align:   "
+horizontal_alignment = 2
+
 [node name="LinkButton" type="Button" parent="."]
 unique_name_in_owner = true
 anchors_preset = 1
@@ -148,6 +155,88 @@ grow_horizontal = 0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 theme_type_variation = &"IconButton"
-icon = ExtResource("2_1vhwq")
+icon = ExtResource("2_5osy4")
 icon_alignment = 1
 expand_icon = true
+
+[node name="GridContainer2" type="GridContainer" parent="."]
+offset_left = 91.0
+offset_top = 54.0
+offset_right = 153.0
+offset_bottom = 116.0
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 1
+columns = 3
+
+[node name="AlignTL" type="Button" parent="GridContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+theme_type_variation = &"AlignmentButton"
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("ButtonGroup_sgfwq")
+
+[node name="AlignT" type="Button" parent="GridContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+theme_type_variation = &"AlignmentButton"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_sgfwq")
+
+[node name="AlignTR" type="Button" parent="GridContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+theme_type_variation = &"AlignmentButton"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_sgfwq")
+
+[node name="AlignL" type="Button" parent="GridContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+theme_type_variation = &"AlignmentButton"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_sgfwq")
+
+[node name="AlignC" type="Button" parent="GridContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+theme_type_variation = &"AlignmentButton"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_sgfwq")
+
+[node name="AlignR" type="Button" parent="GridContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+theme_type_variation = &"AlignmentButton"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_sgfwq")
+
+[node name="AlignBL" type="Button" parent="GridContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+theme_type_variation = &"AlignmentButton"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_sgfwq")
+
+[node name="AlignB" type="Button" parent="GridContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+theme_type_variation = &"AlignmentButton"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_sgfwq")
+
+[node name="AlignBR" type="Button" parent="GridContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+theme_type_variation = &"AlignmentButton"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_sgfwq")

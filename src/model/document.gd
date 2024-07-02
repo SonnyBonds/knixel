@@ -59,13 +59,17 @@ func copy_from(other : KnixelResource) -> void:
 
 func check() -> bool:
 	var dirty := false
-	if len(layers) != len(_rendered_layers):
+	if output_image == null or output_image.get_size() != size:
 		dirty = true
-	else:
-		for index in len(layers):
-			if !layers[index].compare(_rendered_layers[index]):
-				dirty = true
-				break
+
+	if not dirty:
+		if len(layers) != len(_rendered_layers):
+			dirty = true
+		else:
+			for index in len(layers):
+				if !layers[index].compare(_rendered_layers[index]):
+					dirty = true
+					break
 
 	if !_undo_state:
 		_undo_state = clone()
@@ -195,6 +199,24 @@ func resize_image(new_size : Vector2i):
 	size = new_size
 	for layer in layers:
 		layer.rescale(factor)
+
+func resize_canvas(new_size : Vector2i, horizontal_alignment : HorizontalAlignment, vertical_alignment : VerticalAlignment):
+	var offset : Vector2i
+	var diff := new_size - size
+	size = new_size
+
+	if horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER:
+		offset.x = int(diff.x*0.5)
+	elif horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT:
+		offset.x = diff.x
+
+	if vertical_alignment == VERTICAL_ALIGNMENT_CENTER:
+		offset.y = int(diff.y*0.5)
+	elif vertical_alignment == VERTICAL_ALIGNMENT_BOTTOM:
+		offset.y = diff.y
+
+	for layer in layers:
+		layer.offset += offset
 
 static func load_from_file(file_path : String) -> Variant:
 	var reader := KnixelResource.Reader.new()

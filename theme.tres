@@ -1,9 +1,30 @@
-[gd_resource type="Theme" load_steps=55 format=3 uid="uid://cw6hjrmx8t6v5"]
+[gd_resource type="Theme" load_steps=58 format=3 uid="uid://cw6hjrmx8t6v5"]
 
 [ext_resource type="Texture2D" uid="uid://c3y06m16epu8m" path="res://icons/updown.svg" id="1_6lfhe"]
 [ext_resource type="Texture2D" uid="uid://v1slcb1iji3l" path="res://icons/checker.svg" id="1_f25g2"]
 [ext_resource type="Texture2D" uid="uid://cn3dc6acrrp1" path="res://icons/checkbox_checked.svg" id="1_ho5hf"]
 [ext_resource type="Texture2D" uid="uid://cqmuyojyqadni" path="res://icons/checkbox.svg" id="2_ns6xt"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pq5kn"]
+bg_color = Color(0.25, 0.25, 0.25, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uagb0"]
+bg_color = Color(0.15, 0.15, 0.15, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qvrqf"]
+bg_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ynb6o"]
 bg_color = Color(0.5, 0.5, 0.5, 1)
@@ -343,6 +364,10 @@ texture = ExtResource("1_ho5hf")
 
 [resource]
 default_font_size = 12
+AlignmentButton/base_type = &"Button"
+AlignmentButton/styles/hover = SubResource("StyleBoxFlat_pq5kn")
+AlignmentButton/styles/normal = SubResource("StyleBoxFlat_uagb0")
+AlignmentButton/styles/pressed = SubResource("StyleBoxFlat_qvrqf")
 BoxContainer/constants/separation = 0
 Button/styles/focus = SubResource("StyleBoxFlat_ynb6o")
 Button/styles/hover = SubResource("StyleBoxFlat_xs2oh")

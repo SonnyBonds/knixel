@@ -1,6 +1,6 @@
-class_name ResizeDialog extends Window
+class_name ResizeCanvasDialog extends Window
 
-signal submitted(ResizeDialog)
+signal submitted(ResizeCanvasDialog)
 
 var old_width : int = 100
 var old_height : int = 100
@@ -8,6 +8,8 @@ var new_width : int = 100
 var new_height : int = 100
 var new_width_percent : float = 100
 var new_height_percent : float = 100
+var horizontal_alignment := HORIZONTAL_ALIGNMENT_LEFT
+var vertical_alignment := VERTICAL_ALIGNMENT_TOP
 var _linked := true
 
 @onready var _width_edit := %WidthEdit as LineEdit
@@ -15,6 +17,16 @@ var _linked := true
 @onready var _height_edit := %HeightEdit as LineEdit 
 @onready var _height_percent_edit := %HeightEditPercent as LineEdit 
 @onready var _link_button := %LinkButton as Button
+
+@onready var _align_button_tl := %AlignTL as Button
+@onready var _align_button_t := %AlignT as Button
+@onready var _align_button_tr := %AlignTR as Button
+@onready var _align_button_l := %AlignL as Button
+@onready var _align_button_c := %AlignC as Button
+@onready var _align_button_r := %AlignR as Button
+@onready var _align_button_bl := %AlignBL as Button
+@onready var _align_button_b := %AlignB as Button
+@onready var _align_button_br := %AlignBR as Button
 
 func _ready() -> void:
 	_width_edit.text = str(new_width)
@@ -32,6 +44,16 @@ func _ready() -> void:
 	_height_percent_edit.text_changed.connect(_on_height_percent_text_changed)
 	_height_edit.text_submitted.connect(_on_submit)
 	_height_percent_edit.text_submitted.connect(_on_submit)
+
+	_align_button_tl.pressed.connect(_on_alignment_clicked)
+	_align_button_t.pressed.connect(_on_alignment_clicked)
+	_align_button_tr.pressed.connect(_on_alignment_clicked)
+	_align_button_l.pressed.connect(_on_alignment_clicked)
+	_align_button_c.pressed.connect(_on_alignment_clicked)
+	_align_button_r.pressed.connect(_on_alignment_clicked)
+	_align_button_bl.pressed.connect(_on_alignment_clicked)
+	_align_button_b.pressed.connect(_on_alignment_clicked)
+	_align_button_br.pressed.connect(_on_alignment_clicked)
 
 	%CancelButton.pressed.connect(_close_requested)
 	%OkButton.pressed.connect(_on_ok)
@@ -95,3 +117,34 @@ func _on_linked_clicked():
 		_update_linked_height()
 	else:
 		_link_button.icon = preload("res://icons/size_unlinked.svg")
+
+func _on_alignment_clicked() -> void:
+	# Not fantastic but it works
+	if _align_button_tl.button_pressed:
+		horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	elif _align_button_t.button_pressed:
+		horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	elif _align_button_tr.button_pressed:
+		horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	elif _align_button_l.button_pressed:
+		horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	elif _align_button_c.button_pressed:
+		horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	elif _align_button_r.button_pressed:
+		horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	elif _align_button_bl.button_pressed:
+		horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	elif _align_button_b.button_pressed:
+		horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	elif _align_button_br.button_pressed:
+		horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+

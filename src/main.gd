@@ -8,7 +8,7 @@ var _clipboard : Image
 
 enum { FILE_NEW, FILE_OPEN, FILE_CLOSE, FILE_SAVE, FILE_SAVE_AS, FILE_EXPORT, FILE_EXPORT_AGAIN, FILE_QUIT,
 	   EDIT_UNDO, EDIT_REDO, EDIT_CUT, EDIT_COPY, EDIT_PASTE, EDIT_SELECT_ALL, EDIT_FILL_FOREGROUND, EDIT_FILL_BACKGROUND, EDIT_CLEAR_SELECTION, EDIT_DELETE,
-	   IMAGE_RESIZE_IMAGE }
+	   IMAGE_RESIZE_IMAGE, IMAGE_RESIZE_CANVAS }
 
 @onready var canvas_container := %CanvasContainer as TabContainer
 @onready var _swap_colors_button := %SwapColorsButton as Button
@@ -62,7 +62,8 @@ func _ready():
 	%EditMenu.get_popup().add_item("Delete", EDIT_DELETE, KEY_DELETE)
 
 	%ImageMenu.get_popup().id_pressed.connect(_on_menu_pressed)
-	%ImageMenu.get_popup().add_item("Resize Image...", IMAGE_RESIZE_IMAGE)
+	%ImageMenu.get_popup().add_item("Resize Image...", IMAGE_RESIZE_IMAGE, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_I)
+	%ImageMenu.get_popup().add_item("Resize Canvas...", IMAGE_RESIZE_CANVAS, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_C)
 
 	$FileOpenDialog.file_selected.connect(_on_file_open_selected)
 	$FileOpenDialog.filters = [
@@ -134,8 +135,8 @@ func open_new_dialog() -> void:
 
 	add_child(dialog)
 
-func open_resize_dialog() -> void:
-	var dialog = preload("res://src/ui/resize_dialog.tscn").instantiate()
+func open_resize_image_dialog() -> void:
+	var dialog = preload("res://src/ui/resize_image_dialog.tscn").instantiate()
 
 	if not active_canvas:
 		return
@@ -150,7 +151,27 @@ func open_resize_dialog() -> void:
 
 	dialog.position = get_window().position + (get_window().size - dialog.size) / 2
 
-	dialog.submitted.connect(_on_resize_dialog_submitted)
+	dialog.submitted.connect(_on_resize_image_dialog_submitted)
+
+	add_child(dialog)
+
+func open_resize_canvas_dialog() -> void:
+	var dialog = preload("res://src/ui/resize_canvas_dialog.tscn").instantiate()
+
+	if not active_canvas:
+		return
+
+	dialog.old_width = active_canvas.document.size.x
+	dialog.old_height = active_canvas.document.size.y
+	dialog.new_width = active_canvas.document.size.x
+	dialog.new_height = active_canvas.document.size.y
+
+	dialog.content_scale_factor = get_viewport().content_scale_factor
+	dialog.size *= dialog.content_scale_factor
+
+	dialog.position = get_window().position + (get_window().size - dialog.size) / 2
+
+	dialog.submitted.connect(_on_resize_canvas_dialog_submitted)
 
 	add_child(dialog)
 
@@ -164,7 +185,7 @@ func _on_new_dialog_submitted(dialog : NewDialog) -> void:
 
 	_create_document_from_image(image, dialog.name)
 
-func _on_resize_dialog_submitted(dialog : ResizeDialog) -> void:
+func _on_resize_image_dialog_submitted(dialog : ResizeImageDialog) -> void:
 	if dialog.new_width < 1 or dialog.new_width > 4096 or dialog.new_height < 1 or dialog.new_height > 4096:
 		return
 
@@ -173,7 +194,14 @@ func _on_resize_dialog_submitted(dialog : ResizeDialog) -> void:
 
 	active_canvas.document.resize_image(Vector2i(dialog.new_width, dialog.new_height))
 
-	pass
+func _on_resize_canvas_dialog_submitted(dialog : ResizeCanvasDialog) -> void:
+	if dialog.new_width < 1 or dialog.new_width > 4096 or dialog.new_height < 1 or dialog.new_height > 4096:
+		return
+
+	if not active_canvas:
+		return
+
+	active_canvas.document.resize_canvas(Vector2i(dialog.new_width, dialog.new_height), dialog.horizontal_alignment, dialog.vertical_alignment)
 
 func _on_menu_pressed(id : int) -> void:
 	match id:
@@ -218,7 +246,9 @@ func _on_menu_pressed(id : int) -> void:
 		EDIT_FILL_BACKGROUND:
 			active_canvas.document.fill(active_canvas.document.background_color)
 		IMAGE_RESIZE_IMAGE:
-			open_resize_dialog()
+			open_resize_image_dialog()
+		IMAGE_RESIZE_CANVAS:
+			open_resize_canvas_dialog()
 
 func _on_file_open_selected(file : String) -> void:
 	load_from_file(file)
