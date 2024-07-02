@@ -491,7 +491,7 @@ static func blend_async(framebuffer : Dictionary, src_texture : RID, src_offset 
 static func blend(src : Image, dst : Image, offset : Vector2i, color : Color) -> Image:
 	var rids : Array[RID] = []
 
-	var output_texture := create_texture_from_image(dst, RenderingDevice.TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT)
+	var output_texture := create_texture_from_image(dst, RenderingDevice.TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT | RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT)
 	rids.push_back(output_texture)
 
 	var framebuffer := render_device.framebuffer_create([output_texture])

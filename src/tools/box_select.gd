@@ -125,6 +125,7 @@ func _update_dragged_image():
 			rect = rect.merge(drag_rect)
 			image = ImageProcessor.crop_or_extend(_back_image, rect, _back_image_offset)
 		canvas.document.start_undo_block()
+		# TODO: This blend method should not be used for continuous updates like these
 		layer.image = ImageProcessor.blend(_drag_image, image, Vector2i(dest_pos) - rect.position, Color.WHITE)
 		layer.offset = rect.position
 		canvas.document.end_undo_block()
