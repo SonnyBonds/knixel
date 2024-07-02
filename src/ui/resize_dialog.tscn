@@ -1,0 +1,140 @@
+[gd_scene load_steps=3 format=3 uid="uid://chd1lt5co0wcj"]
+
+[ext_resource type="Script" path="res://src/ui/resize_dialog.gd" id="1_icvwc"]
+[ext_resource type="Texture2D" uid="uid://cyinnka1vuja5" path="res://icons/size_linked.svg" id="2_1vhwq"]
+
+[node name="ResizeDialog" type="Window"]
+auto_translate_mode = 1
+disable_3d = true
+title = "Resize Image"
+position = Vector2i(0, 61)
+size = Vector2i(250, 120)
+exclusive = true
+script = ExtResource("1_icvwc")
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -110.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_type_variation = &"ButtonBarContainer"
+
+[node name="CancelButton" type="Button" parent="Panel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "Cancel"
+
+[node name="OkButton" type="Button" parent="Panel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "Ok"
+
+[node name="GridContainer" type="GridContainer" parent="."]
+offset_left = 35.0
+offset_top = 10.0
+offset_right = 215.0
+offset_bottom = 71.0
+size_flags_horizontal = 8
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+columns = 3
+
+[node name="Control" type="Control" parent="GridContainer"]
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "From"
+horizontal_alignment = 1
+
+[node name="Label5" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "To"
+horizontal_alignment = 1
+
+[node name="Label4" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Width:"
+horizontal_alignment = 2
+
+[node name="FromWidthLabel" type="Label" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 2
+
+[node name="WidthEdit" type="LineEdit" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+alignment = 2
+max_length = 5
+virtual_keyboard_type = 2
+select_all_on_focus = true
+
+[node name="Label2" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Height:"
+horizontal_alignment = 2
+
+[node name="FromHeightLabel" type="Label" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 2
+
+[node name="HeightEdit" type="LineEdit" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+alignment = 2
+max_length = 5
+virtual_keyboard_type = 2
+select_all_on_focus = true
+
+[node name="LinkButton" type="Button" parent="."]
+unique_name_in_owner = true
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -30.0
+offset_top = -16.0
+offset_right = -14.0
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_type_variation = &"IconButton"
+icon = ExtResource("2_1vhwq")
+icon_alignment = 1
+expand_icon = true

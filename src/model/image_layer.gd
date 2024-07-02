@@ -4,6 +4,11 @@ class_name ImageLayer extends Layer
 var _texture_image : Image
 var _texture_rid : RID
 
+func rescale(scale : Vector2) -> void:
+    offset = Vector2i(Vector2(offset) * scale)
+    image = image.duplicate()
+    image.resize(int(round(image.get_width() * scale.x)), int(round(image.get_height() * scale.y)))
+
 func extract_masked_image(mask : Image, mask_offset : Vector2i = Vector2i.ZERO) -> Image:
     var new_image := ImageProcessor.apply_mask(image, mask, mask_offset-offset)
     var rect : Rect2i = new_image.get_used_rect()

@@ -7,6 +7,7 @@ var document : Document
 var tool : Tool
 
 var _last_size : Vector2
+var _displayed_image : Image
 var _displayed_selection : Image
 
 func pos_to_image(pos : Vector2) -> Vector2:
@@ -71,6 +72,12 @@ func _process(_delta):
 		tool.process()
 
 	var image_control := %Image as Control
+
+	if _displayed_image != document.output_image:
+		_displayed_image = document.output_image
+		image_control.texture = ImageTexture.create_from_image(_displayed_image)
+		image_control.size = _displayed_image.get_size()
+
 	$Background.position = image_control.position
 	$Background.size = image_control.size * image_control.scale
 	$SubViewport.size = document.size
@@ -82,5 +89,3 @@ func _process(_delta):
 		else:
 			%Selection.texture = null
 	%Selection.position = document.selection_offset
-
-	%Image.texture = ImageTexture.create_from_image(document.output_image)

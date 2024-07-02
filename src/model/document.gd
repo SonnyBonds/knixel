@@ -190,6 +190,12 @@ func reset_colors():
 	foreground_color = Color.WHITE
 	background_color = Color.BLACK
 
+func resize_image(new_size : Vector2i):
+	var factor := Vector2(new_size) / Vector2(size)
+	size = new_size
+	for layer in layers:
+		layer.rescale(factor)
+
 static func load_from_file(file_path : String) -> Variant:
 	var reader := KnixelResource.Reader.new()
 	var err := reader.open(file_path)
