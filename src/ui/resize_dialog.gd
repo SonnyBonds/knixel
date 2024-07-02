@@ -15,7 +15,6 @@ var _linked := true
 @onready var _height_edit := %HeightEdit as LineEdit 
 @onready var _height_percent_edit := %HeightEditPercent as LineEdit 
 @onready var _link_button := %LinkButton as Button
-@onready var _unit_drop_down := %UnitDropDown as DropDown
 
 func _ready() -> void:
 	_width_edit.text = str(new_width)
