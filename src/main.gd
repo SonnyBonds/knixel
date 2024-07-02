@@ -87,6 +87,10 @@ func _ready():
 	_reset_colors_button.pressed.connect(reset_colors)
 
 	for arg in OS.get_cmdline_args():
+		# TODO: Figure out why the editor passes a scene as argument
+		# to the application
+		if arg.ends_with(".tscn"):
+			continue
 		load_from_file(arg)
 
 func _notification(what : int) -> void:
