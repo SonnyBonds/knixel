@@ -27,8 +27,9 @@ func _ready():
 	resized.connect(_on_resized)
 
 func reset_view():
-	# TODO: Figure out DPI
-	%Image.scale = Vector2(0.5, 0.5)
+	# Show 1:1 pixels by default
+	var ui_scale = get_viewport().content_scale_factor
+	%Image.scale = Vector2(1 / ui_scale, 1 / ui_scale)
 	%Image.position = (Vector2i(size) - document.size/2) / 2
 
 func _on_resized():
