@@ -8,6 +8,8 @@ var _displayed_image : Image
 
 func _ready():
 	%VisibilityButton.pressed.connect(_on_visible_clicked)
+
+func _enter_tree():
 	_process(0)
 
 func _gui_input(event):

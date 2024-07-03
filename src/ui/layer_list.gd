@@ -19,12 +19,12 @@ func _process(_delta):
 	if num_layers != layer_container.get_child_count():
 		dirty = true
 	else:
-		var index = 0
+		var index = num_layers-1
 		for item in layer_container.get_children():
 			if item.layer != document.layers[index]:
 				dirty = true
 				break
-			index += 1
+			index -= 1
 
 	if dirty:
 		update()
@@ -38,6 +38,7 @@ func update():
 		return
 
 	var document = main.active_canvas.document
+	var new_items := []
 	if document:
 		for layer in document.layers:
 			var found_existing := false
@@ -46,8 +47,7 @@ func update():
 				if existing_item.document == document and existing_item.layer.id == layer.id:
 					# Relink to new actual instance
 					existing_item.layer = layer
-
-					layer_container.add_child(existing_item)
+					new_items.push_back(existing_item)
 					existing_items.remove_at(item_index)
 					found_existing = true
 					break
@@ -58,14 +58,19 @@ func update():
 			var item = preload("res://src/ui/layer_item.tscn").instantiate()
 			item.document = document
 			item.layer = layer
-			layer_container.add_child(item)
-			item.set_drag_forwarding(\
-				func(from_position): return _layer_get_drag_data(layer, from_position),\
-				func(at_position, data): return _layer_can_drop_data(layer, at_position, data),\
+			item.set_drag_forwarding(
+				func(from_position): return _layer_get_drag_data(layer, from_position),
+				func(at_position, data): return _layer_can_drop_data(layer, at_position, data),
 				func(at_position, data): _layer_drop_data(layer, at_position, data))
+			new_items.push_back(item)
+	
+	new_items.reverse()
+	for item in new_items:
+		layer_container.add_child(item)
 
 	for item in existing_items:
 		item.queue_free()
+
 
 func _calc_layer_drop_location(at_layer : Layer, above : bool):
 	var document = main.active_canvas.document
@@ -75,7 +80,7 @@ func _calc_layer_drop_location(at_layer : Layer, above : bool):
 	var last_layer : Layer = null
 	var index : int = 0
 	for layer in document.layers:
-		if (above and layer == at_layer) or (not above and last_layer == at_layer):
+		if (not above and layer == at_layer) or (above and last_layer == at_layer):
 			return {"after": last_layer, "before": layer, "index": index}
 		last_layer = layer
 		index += 1
