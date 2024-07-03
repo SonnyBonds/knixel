@@ -14,6 +14,8 @@ var _paint_framebuffer : Dictionary
 var _paint_framebuffer_copy_texture : RID
 var _back_texture_offset : Vector2i
 var _back_texture : RID
+var _selection_texture_offset : Vector2i
+var _selection_texture : RID
 var _framebuffer_pool := ImageProcessor.FramebufferPool.new()
 
 enum State { NONE, BOX, SELECTION }
@@ -45,6 +47,10 @@ func deactivate() -> void:
 		ImageProcessor.render_device.free_rid(_back_texture)
 		_back_texture = RID()
 
+	if _selection_texture:
+		ImageProcessor.render_device.free_rid(_selection_texture)
+		_selection_texture = RID()
+
 	if _brush_texture:
 		ImageProcessor.render_device.free_rid(_brush_texture)
 		_brush_texture = RID()
@@ -73,6 +79,13 @@ func _gui_event(event: InputEvent) -> void:
 				ImageProcessor.render_device.free_rid(_back_texture)
 				_back_texture = RID()
 
+			if _selection_texture:
+				ImageProcessor.render_device.free_rid(_selection_texture)
+				_selection_texture = RID()
+
+			if canvas.document.selection:
+				_selection_texture = ImageProcessor.create_texture_from_image(canvas.document.selection)
+				_selection_texture_offset = canvas.document.selection_offset
 
 			_back_texture = ImageProcessor.create_texture_from_image(layer.image)
 			_back_texture_offset = layer.offset
@@ -115,15 +128,37 @@ func _update_blended_image():
 		var paint_rect := Rect2i(Vector2i.ZERO, ImageProcessor.get_texture_size(_paint_framebuffer.texture))
 		if not rect.encloses(paint_rect):
 			rect = rect.merge(paint_rect)
+
 		var blended_framebuffer := _framebuffer_pool.get_framebuffer(rect.size)
-		ImageProcessor.blend_async(blended_framebuffer, 
-			_paint_framebuffer.texture, 
-			-rect.position, 
-			_back_texture, 
-			_back_texture_offset - rect.position, 
-			Color.WHITE, 
-			Rect2i(Vector2i.ZERO, blended_framebuffer.size), 
-			ImageProcessor.BlendMode.Erase)
+		if _selection_texture:
+			var masked_framebuffer := _framebuffer_pool.get_framebuffer(_paint_framebuffer.size)
+			ImageProcessor.render_device.texture_clear(masked_framebuffer.texture, Color(0, 0, 0, 0), 0, 1, 0, 1)
+			ImageProcessor.blend_async(masked_framebuffer, 
+				_selection_texture,
+				_selection_texture_offset,
+				_paint_framebuffer.texture, 
+				Vector2i.ZERO,
+				Color.WHITE,
+				Rect2i(Vector2i.ZERO, _paint_framebuffer.size),
+				ImageProcessor.BlendMode.InternalApplySelectionMask)
+			ImageProcessor.blend_async(blended_framebuffer, 
+				masked_framebuffer.texture, 
+				-rect.position,
+				_back_texture, 
+				_back_texture_offset - rect.position,
+				Color.WHITE,
+				Rect2i(Vector2i.ZERO, blended_framebuffer.size), 
+				ImageProcessor.BlendMode.Erase)
+			_framebuffer_pool.release_framebuffer(masked_framebuffer.framebuffer)
+		else:
+			ImageProcessor.blend_async(blended_framebuffer, 
+				_paint_framebuffer.texture, 
+				-rect.position, 
+				_back_texture, 
+				_back_texture_offset - rect.position,
+				Color.WHITE,
+				Rect2i(Vector2i.ZERO, blended_framebuffer.size), 
+				ImageProcessor.BlendMode.Erase)
 
 		ImageProcessor.render_device.submit()
 		ImageProcessor.render_device.sync()

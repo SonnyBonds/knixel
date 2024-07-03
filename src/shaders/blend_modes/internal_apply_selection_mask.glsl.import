@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://btc6s8res720m"
+path="res://.godot/imported/internal_apply_selection_mask.glsl-75e07e3df6b311f86bf9a60f50917e07.res"
+
+[deps]
+
+source_file="res://src/shaders/blend_modes/internal_apply_selection_mask.glsl"
+dest_files=["res://.godot/imported/internal_apply_selection_mask.glsl-75e07e3df6b311f86bf9a60f50917e07.res"]
+
+[params]
+

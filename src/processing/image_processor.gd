@@ -1,6 +1,6 @@
 class_name ImageProcessor extends Node
 
-enum BlendMode { Normal, Add, Darken, Difference, Erase, Lighten, Multiply, Screen, Subtract }
+enum BlendMode { Normal, Add, Darken, Difference, Erase, Lighten, Multiply, Screen, Subtract, InternalApplySelectionMask }
 
 static var render_device := RenderingServer.create_local_rendering_device()
 static var texture_view := RDTextureView.new()
@@ -232,6 +232,7 @@ static func _static_init():
 	_blend_pipelines[BlendMode.Normal] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/normal.glsl"))
 	_blend_pipelines[BlendMode.Screen] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/screen.glsl"))
 	_blend_pipelines[BlendMode.Subtract] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/subtract.glsl"))
+	_blend_pipelines[BlendMode.InternalApplySelectionMask] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/internal_apply_selection_mask.glsl"))
 
 	var index_byte_array := PackedByteArray()
 	index_byte_array.resize(12)
@@ -265,7 +266,7 @@ static func create_texture_from_image(image : Image, usage_bits : int = Renderin
 	if image.get_format() == Image.FORMAT_RGBA8:
 		format.format = RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
 	elif image.get_format() == Image.FORMAT_R8:
-		format.format = RenderingDevice.DATA_FORMAT_R8_SRGB
+		format.format = RenderingDevice.DATA_FORMAT_R8_UNORM
 	else:
 		assert(false, "Unsupported image format: " + str(image.get_format()))
 	format.usage_bits = usage_bits
