@@ -16,6 +16,7 @@ func _ready():
 	blend_mode_drop_down.items.push_back(DropDown.Item.new("Darken", ImageProcessor.BlendMode.Darken))
 	blend_mode_drop_down.items.push_back(DropDown.Item.new("Screen", ImageProcessor.BlendMode.Screen))
 	blend_mode_drop_down.items.push_back(DropDown.Item.new("Difference", ImageProcessor.BlendMode.Difference))
+	blend_mode_drop_down.items.push_back(DropDown.Item.new("Erase", ImageProcessor.BlendMode.Erase))
 	blend_mode_drop_down.commit.connect(_on_blend_mode_commit)
 
 func _on_edit_started():

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://b3awekc2x83x3"
+path="res://.godot/imported/erase.glsl-a698dd8417092a94f2ca4b9dbb1f4295.res"
+
+[deps]
+
+source_file="res://src/shaders/blend_modes/erase.glsl"
+dest_files=["res://.godot/imported/erase.glsl-a698dd8417092a94f2ca4b9dbb1f4295.res"]
+
+[params]
+

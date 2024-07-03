@@ -1,6 +1,6 @@
 class_name ImageProcessor extends Node
 
-enum BlendMode { Normal, Add, Darken, Difference, Lighten, Multiply, Screen, Subtract }
+enum BlendMode { Normal, Add, Darken, Difference, Erase, Lighten, Multiply, Screen, Subtract }
 
 static var render_device := RenderingServer.create_local_rendering_device()
 static var texture_view := RDTextureView.new()
@@ -226,6 +226,7 @@ static func _static_init():
 	_blend_pipelines[BlendMode.Add] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/add.glsl"))
 	_blend_pipelines[BlendMode.Darken] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/darken.glsl"))
 	_blend_pipelines[BlendMode.Difference] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/difference.glsl"))
+	_blend_pipelines[BlendMode.Erase] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/erase.glsl"))
 	_blend_pipelines[BlendMode.Lighten] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/lighten.glsl"))
 	_blend_pipelines[BlendMode.Multiply] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/multiply.glsl"))
 	_blend_pipelines[BlendMode.Normal] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/normal.glsl"))
