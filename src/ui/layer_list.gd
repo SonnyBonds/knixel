@@ -185,7 +185,7 @@ func _drop_data(_at_position : Vector2, data:Variant) -> void:
 	if not document:
 		return
 	document.layers.erase(layer)
-	document.layers.push_back(layer)
+	document.layers.push_front(layer)
 
 func _on_mouse_exited():
 	drop_hint.visible = false
