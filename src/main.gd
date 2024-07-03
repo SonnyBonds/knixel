@@ -14,7 +14,9 @@ enum { FILE_NEW, FILE_OPEN, FILE_CLOSE, FILE_SAVE, FILE_SAVE_AS, FILE_EXPORT, FI
 @onready var _swap_colors_button := %SwapColorsButton as Button
 @onready var _reset_colors_button := %ResetColorsButton as Button
 
-
+func _init():
+	KnixelResource.initialize()
+	
 func _shortcut(key : Key):
 		var event := InputEventKey.new()
 		event.pressed = true

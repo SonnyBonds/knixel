@@ -74,7 +74,10 @@ class Reader extends RefCounted:
 
 		return read_blob(dict["path"])
 
-static func _static_init():
+# Ideally this should have been in _static_init, but initialization order
+# seems to not be defined and this needs to happen after script classes have
+# been loaded.
+static func initialize():
 	# Build a list of all KnixelResource derived types by iterating over all
 	# registered types and checking if their parent is a KnixelResource derived type.
 	# Instead of doing the search recursively, it's iterating multiple times leaving
