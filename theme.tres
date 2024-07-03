@@ -225,12 +225,12 @@ expand_margin_bottom = 1.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lwx1k"]
 content_margin_left = 2.0
-content_margin_top = 6.0
-content_margin_bottom = 6.0
+content_margin_top = 3.0
+content_margin_bottom = 3.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jgc6g"]
-content_margin_top = 6.0
-content_margin_bottom = 6.0
+content_margin_top = 3.0
+content_margin_bottom = 3.0
 bg_color = Color(0.3, 0.3, 0.3, 1)
 border_width_left = 2
 

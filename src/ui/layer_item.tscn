@@ -4,15 +4,12 @@
 [ext_resource type="PackedScene" uid="uid://b73as78ofg6vx" path="res://src/ui/effect_list.tscn" id="2_nlvp6"]
 
 [node name="LayerItem" type="PanelContainer"]
-anchors_preset = 14
-anchor_top = 0.5
+anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_top = -16.0
-offset_bottom = 16.0
+offset_bottom = 20.0
 grow_horizontal = 2
-grow_vertical = 2
 size_flags_horizontal = 3
+theme_type_variation = &"LayerPanel"
 script = ExtResource("1_0mhma")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -22,7 +19,9 @@ theme_override_constants/separation = 0
 [node name="HeaderPanel" type="PanelContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 4
 mouse_filter = 2
+theme_type_variation = &"LayerHeaderPanel"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HeaderPanel"]
 layout_mode = 2
