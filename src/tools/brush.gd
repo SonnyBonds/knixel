@@ -81,8 +81,9 @@ func _gui_event(event: InputEvent) -> void:
 			_paint_framebuffer_copy_texture = ImageProcessor.create_texture(canvas.document.size, RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_TO_BIT)
 			ImageProcessor.render_device.texture_clear(_paint_framebuffer_copy_texture, Color(0, 0, 0, 0), 0, 1, 0, 1)
 			_last_splat_point = canvas.pos_to_image(canvas.get_local_mouse_position())
+			_update_brush()
 			_try_splat(_last_splat_point, true)
-			_process_queue()
+			_update_blended_image()
 		else:
 			_process_queue()
 
