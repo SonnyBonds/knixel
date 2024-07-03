@@ -80,7 +80,6 @@ func _process(_delta):
 
 	$Background.position = image_control.position
 	$Background.size = image_control.size * image_control.scale
-	$SubViewport.size = document.size
 
 	if document.selection != _displayed_selection:
 		_displayed_selection = document.selection
