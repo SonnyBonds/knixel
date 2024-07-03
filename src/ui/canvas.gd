@@ -79,6 +79,12 @@ func _process(_delta):
 		image_control.texture = ImageTexture.create_from_image(_displayed_image)
 		image_control.size = _displayed_image.get_size()
 
+	var ui_scale = get_viewport().content_scale_factor
+	if image_control.scale.x > 1/ui_scale:
+		image_control.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	else:
+		image_control.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+
 	$Background.position = image_control.position
 	$Background.size = image_control.size * image_control.scale
 
