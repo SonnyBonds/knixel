@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://djijed1j0fltc"]
+[gd_scene load_steps=25 format=3 uid="uid://djijed1j0fltc"]
 
 [ext_resource type="Script" path="res://src/main.gd" id="1_2kqib"]
 [ext_resource type="Texture2D" uid="uid://v8x5oroetip3" path="res://icons/tool_move.svg" id="2_pcivx"]
@@ -11,6 +11,8 @@
 [ext_resource type="Texture2D" uid="uid://cyejjlhe1seyt" path="res://icons/reset_colors.svg" id="8_g1e1s"]
 [ext_resource type="Texture2D" uid="uid://bnlygsn4nmthr" path="res://icons/swap_colors.svg" id="8_mirfq"]
 [ext_resource type="Script" path="res://src/tools/brush.gd" id="8_qmp3m"]
+[ext_resource type="Texture2D" uid="uid://djg6ey7w1ypne" path="res://icons/tool_eraser.svg" id="9_jsrb1"]
+[ext_resource type="Script" path="res://src/tools/eraser.gd" id="9_n33e1"]
 [ext_resource type="Texture2D" uid="uid://s2vvg22i6d0f" path="res://icons/tool_eyedropper.svg" id="9_pbmx0"]
 [ext_resource type="PackedScene" uid="uid://dgyaawgel00c7" path="res://src/ui/layer_header.tscn" id="9_swhc1"]
 [ext_resource type="Script" path="res://src/tools/eyedropper.gd" id="10_dnj8m"]
@@ -182,6 +184,20 @@ icon = ExtResource("7_o6b3u")
 expand_icon = true
 script = ExtResource("3_q3wib")
 tool_type = ExtResource("8_qmp3m")
+
+[node name="Eraser" type="Button" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer/ToolBar"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+action_mode = 0
+button_group = SubResource("ButtonGroup_t4q8r")
+icon = ExtResource("9_jsrb1")
+expand_icon = true
+script = ExtResource("3_q3wib")
+tool_type = ExtResource("9_n33e1")
 
 [node name="EyeDropper" type="Button" parent="Panel/VBoxContainer/HBoxContainer/PanelContainer/VBoxContainer/ToolBar"]
 custom_minimum_size = Vector2(24, 24)

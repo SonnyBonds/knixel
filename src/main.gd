@@ -84,6 +84,7 @@ func _ready():
 	%ToolBar/Move.shortcut = _shortcut(KEY_V)
 	%ToolBar/BoxSelect.shortcut = _shortcut(KEY_M)
 	%ToolBar/Brush.shortcut = _shortcut(KEY_B)
+	%ToolBar/Eraser.shortcut = _shortcut(KEY_E)
 	%ToolBar/EyeDropper.shortcut = _shortcut(KEY_I)
 
 	_swap_colors_button.shortcut = _shortcut(KEY_X)
