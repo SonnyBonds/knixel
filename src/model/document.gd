@@ -373,30 +373,33 @@ func _render() -> void:
 	var canvas_framebuffer = framebuffer_pool.get_framebuffer(size)
 	canvas_framebuffer["layer_id"] = 0
 
-	var layer_stack := [{"group_id": 0, "group_layer": null, "layers": []}]
+	# This loop needs some cleanup and comments
+
+	var layer_stack := [{"group_id": 0, "group_layer": null, "layers": [], "visible": true}]
 	for layer in layers:
 		_rendered_layers.push_back(layer.clone())
 
 		if layer is GroupLayer:
 			var pass_through := layer.blend_mode == ImageProcessor.BlendMode.PassThrough and layer.effects.is_empty()
 			var layer_list = layer_stack.back().layers if pass_through else []
-			layer_stack.push_back({"group_id": layer.id, "group_layer": layer, "layers": layer_list})
+			layer_stack.push_back({"group_id": layer.id, "group_layer": layer, "layers": layer_list, "visible": layer.visible and layer_stack.back().visible})
 		else:
 			while layer_stack.back().group_id != layer.parent_id:
 				var group_layer = layer_stack.back().group_layer
-				if group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough or not group_layer.effects.is_empty():
+				if layer_stack.back().visible and (group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough or not group_layer.effects.is_empty()):
 					var output := _render_layers(framebuffer_pool, layer_stack.back().layers)
 					layer_stack.pop_back()
 					if output:
 						layer_stack.back().layers.push_back({"layer" : group_layer, "output": output})
 				else:
 					layer_stack.pop_back()
-			layer_stack.back().layers.push_back({"layer": layer})
+			if layer_stack.back().visible and layer.visible:
+				layer_stack.back().layers.push_back({"layer": layer})
 
 	var final_output : Layer.RenderOutput = null
 	while not layer_stack.is_empty():
 		var group_layer = layer_stack.back().group_layer
-		if not group_layer or group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough or not group_layer.effects.is_empty():
+		if layer_stack.back().visible and (not group_layer or group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough or not group_layer.effects.is_empty()):
 			var output := _render_layers(framebuffer_pool, layer_stack.back().layers)
 			layer_stack.pop_back()
 			if layer_stack.is_empty():
