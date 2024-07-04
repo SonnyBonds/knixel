@@ -384,7 +384,7 @@ func _render() -> void:
 		else:
 			while layer_stack.back().group_id != layer.parent_id:
 				var group_layer = layer_stack.back().group_layer
-				if group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough:
+				if group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough or not group_layer.effects.is_empty():
 					var output := _render_layers(framebuffer_pool, layer_stack.back().layers)
 					layer_stack.pop_back()
 					if output:
@@ -396,13 +396,17 @@ func _render() -> void:
 	var final_output : Layer.RenderOutput = null
 	while not layer_stack.is_empty():
 		var group_layer = layer_stack.back().group_layer
-		var output := _render_layers(framebuffer_pool, layer_stack.back().layers)
-		layer_stack.pop_back()
-		if layer_stack.is_empty():
-			final_output = output
+		if not group_layer or group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough or not group_layer.effects.is_empty():
+			var output := _render_layers(framebuffer_pool, layer_stack.back().layers)
+			layer_stack.pop_back()
+			if layer_stack.is_empty():
+				final_output = output
+			else:
+				if output:
+					layer_stack.back().layers.push_back({"layer" : group_layer, "output": output})
 		else:
-			if output:
-				layer_stack.back().layers.push_back({"layer" : group_layer, "output": output})
+			layer_stack.pop_back()
+
 
 	var bogus_texture := ImageProcessor.create_texture(Vector2i(16, 16))
 	ImageProcessor.blend_async(canvas_framebuffer, final_output.texture, final_output.offset, bogus_texture, Vector2i.ZERO, Color.WHITE)
