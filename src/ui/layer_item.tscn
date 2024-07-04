@@ -14,6 +14,7 @@ script = ExtResource("1_0mhma")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
 [node name="HeaderPanel" type="PanelContainer" parent="VBoxContainer"]
@@ -49,6 +50,11 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 expand_mode = 1
+
+[node name="Indent" type="Control" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
 
 [node name="NameLabel" type="Label" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
 unique_name_in_owner = true

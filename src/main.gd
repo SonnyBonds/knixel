@@ -401,7 +401,7 @@ func paste() -> void:
 			var layer := ImageLayer.new()
 			layer.image = image
 			layer.name = active_canvas.document.get_new_layer_name()
-			active_canvas.document.layers.push_back(layer)
+			active_canvas.document.layers.push_front(layer)
 			active_canvas.document.selected_layer_id = layer.id
 			active_canvas.document.selected_effect_id = 0
 			active_canvas.document.selection = null

@@ -135,7 +135,7 @@ func _update_blended_image():
 			ImageProcessor.render_device.texture_clear(masked_framebuffer.texture, Color(0, 0, 0, 0), 0, 1, 0, 1)
 			ImageProcessor.blend_async(masked_framebuffer, 
 				_selection_texture,
-				_selection_texture_offset,
+				_selection_texture_offset - layer.offset - rect.position,
 				_paint_framebuffer.texture, 
 				Vector2i.ZERO,
 				Color.WHITE,

@@ -1,7 +1,8 @@
-extends Control
+class_name LayerItem extends Control
 
 var document : Document
 var layer : Layer
+var indent : int
 
 @onready var _effect_list := %EffectList as EffectList
 var _displayed_image : Image
@@ -11,6 +12,7 @@ func _ready():
 
 func _enter_tree():
 	_process(0)
+	%Indent.custom_minimum_size.x = indent * 8
 
 func _gui_input(event):
 	var button := event as InputEventMouseButton

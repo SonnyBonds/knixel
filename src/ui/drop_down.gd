@@ -7,6 +7,7 @@ signal commit
 class Item extends RefCounted:
 	var name : String
 	var data : Variant
+	var enabled := true
 	
 	func _init(_name : String, _data : Variant = null):
 		name = _name
@@ -39,6 +40,7 @@ func _on_pressed():
 	_popup_menu.clear()
 	for index in len(items):
 		_popup_menu.add_item(items[index].name, index)
+		_popup_menu.set_item_disabled(index, !items[index].enabled)
 	var content_scale : float = get_viewport().content_scale_factor 
 	_popup_menu.popup_on_parent(Rect2i(Vector2i(global_position * content_scale), Vector2i(int(size.x*content_scale), 0)))
 

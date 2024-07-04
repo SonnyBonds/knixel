@@ -1,6 +1,6 @@
 class_name ImageProcessor extends Node
 
-enum BlendMode { Normal, Add, Darken, Difference, Erase, Lighten, Multiply, Screen, Subtract, InternalApplySelectionMask }
+enum BlendMode { PassThrough, Normal, Add, Darken, Difference, Erase, Lighten, Multiply, Screen, Subtract, InternalApplySelectionMask }
 
 static var render_device := RenderingServer.create_local_rendering_device()
 static var texture_view := RDTextureView.new()
@@ -233,6 +233,10 @@ static func _static_init():
 	_blend_pipelines[BlendMode.Screen] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/screen.glsl"))
 	_blend_pipelines[BlendMode.Subtract] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/subtract.glsl"))
 	_blend_pipelines[BlendMode.InternalApplySelectionMask] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/internal_apply_selection_mask.glsl"))
+
+	# Pass Through mostly means extra treatment in the compositing order,
+	# the actual blending is just Normal
+	_blend_pipelines[BlendMode.PassThrough] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/normal.glsl"))
 
 	var index_byte_array := PackedByteArray()
 	index_byte_array.resize(12)

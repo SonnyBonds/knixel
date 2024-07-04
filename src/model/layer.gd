@@ -1,6 +1,7 @@
 class_name Layer extends KnixelResource
 
 @export var name : String
+@export var parent_id : int = 0
 @export var offset : Vector2i
 @export var opacity : float = 1
 @export var visible : bool = true
@@ -13,7 +14,6 @@ class RenderOutput extends RefCounted:
 
 func _init():
 	super()
-	#blend_mode = preload("res://src/shaders/blend_modes/normal.gdshader")
 
 func render(_framebuffer_pool : ImageProcessor.FramebufferPool) -> RenderOutput:
 	assert(false)

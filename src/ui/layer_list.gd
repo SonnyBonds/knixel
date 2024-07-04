@@ -19,12 +19,13 @@ func _process(_delta):
 	if num_layers != layer_container.get_child_count():
 		dirty = true
 	else:
-		var index = num_layers-1
+		var index = 0
 		for item in layer_container.get_children():
-			if item.layer != document.layers[index]:
+			var indent = document.calc_layer_depth(document.layers[index])
+			if item.layer != document.layers[index] or item.indent != indent:
 				dirty = true
 				break
-			index -= 1
+			index += 1
 
 	if dirty:
 		update()
@@ -35,36 +36,35 @@ func update():
 		layer_container.remove_child(child)
 
 	if not main.active_canvas:
+		for item in existing_items:
+			item.queue_free()
 		return
 
 	var document = main.active_canvas.document
+
 	var new_items := []
-	if document:
-		for layer in document.layers:
-			var found_existing := false
-			for item_index in len(existing_items):
-				var existing_item := existing_items[item_index]
-				if existing_item.document == document and existing_item.layer.id == layer.id:
-					# Relink to new actual instance
-					existing_item.layer = layer
-					new_items.push_back(existing_item)
-					existing_items.remove_at(item_index)
-					found_existing = true
-					break
+	for layer in document.layers:
+		var item : LayerItem = null
+		for item_index in len(existing_items):
+			var existing_item := existing_items[item_index]
+			if existing_item.document == document and existing_item.layer.id == layer.id:
+				existing_items.remove_at(item_index)
+				item = existing_item
+				break
 
-			if found_existing:
-				continue
+		if not item:
+			item = preload("res://src/ui/layer_item.tscn").instantiate()
 
-			var item = preload("res://src/ui/layer_item.tscn").instantiate()
-			item.document = document
-			item.layer = layer
-			item.set_drag_forwarding(
-				func(from_position): return _layer_get_drag_data(layer, from_position),
-				func(at_position, data): return _layer_can_drop_data(layer, at_position, data),
-				func(at_position, data): _layer_drop_data(layer, at_position, data))
-			new_items.push_back(item)
+		item.set_drag_forwarding(
+			func(from_position): return _layer_get_drag_data(layer, from_position),
+			func(at_position, data): return _layer_can_drop_data(layer, at_position, data),
+			func(at_position, data): _layer_drop_data(layer, at_position, data))
+
+		item.document = document
+		item.layer = layer
+		item.indent = document.calc_layer_depth(layer)
+		new_items.push_back(item)
 	
-	new_items.reverse()
 	for item in new_items:
 		layer_container.add_child(item)
 
@@ -77,15 +77,27 @@ func _calc_layer_drop_location(at_layer : Layer, above : bool):
 	if not document:
 		return {}
 
+	# All this logic is pretty awful
+
 	var last_layer : Layer = null
 	var index : int = 0
 	for layer in document.layers:
-		if (not above and layer == at_layer) or (above and last_layer == at_layer):
-			return {"after": last_layer, "before": layer, "index": index}
+		if layer == at_layer:
+			if above:
+				return {"after": last_layer, "before": layer, "index": index, "parent": layer.parent_id}
+			else:
+				var parent := 0
+				if layer is GroupLayer:
+					parent = layer.id
+				else:
+					parent = layer.parent_id
+				var next_layer = document.layers[index+1] if index+1 < len(document.layers) else null
+				return {"after": layer, "before": next_layer, "index": index+1, "parent": parent}
 		last_layer = layer
 		index += 1
 	
-	return {"after": document.layers.back(), "before": null, "index": len(document.layers)}
+	assert(false)
+	return {"after": document.layers.back(), "before": null, "index": len(document.layers), "parent": 0}
 	
 func _layer_get_drag_data(target_layer : Layer, _from_position : Vector2) -> Variant:
 	var preview := PanelContainer.new()
@@ -104,28 +116,41 @@ func _find_layer_control(layer : Layer) -> Control:
 	return null
 
 func _layer_can_drop_data(target_layer : Layer, at_position : Vector2, data : Variant) -> bool:
-	var can_drop := false
+	var document := main.active_canvas.document
+	if not document:
+		return false
 
 	# Need extra "is Layer" test because it might not even be an object (e.g. Dictionary)
 	var dragged_layer := data as Layer if data is Layer else null
-	if dragged_layer:
-		var control := _find_layer_control(target_layer)
-		if control:
-			var above := at_position.y < control.size.y/2
-			var drop_location = _calc_layer_drop_location(target_layer, above)
-			if drop_location.after != dragged_layer and drop_location.before != dragged_layer:
-				var offset := 0.0 if above else control.size.y
-				drop_hint.position.y = control.global_position.y - global_position.y + offset
-				drop_hint.visible = true
-				can_drop = true
-		
-		if not can_drop:
-			drop_hint.position.y = 0
-			drop_hint.visible = false
-
-		return true
-	else:
+	if not dragged_layer:
 		return false
+
+	var can_drop := true
+
+	# All this logic is pretty awful
+
+	var control := _find_layer_control(target_layer)
+	if control:
+		var above := at_position.y < control.size.y/2
+		var drop_location = _calc_layer_drop_location(target_layer, above)
+		var parent_layer : Layer = document.find_layer_by_id(drop_location.parent) if drop_location.parent != 0 else null
+		if drop_location.parent == dragged_layer.parent_id and (drop_location.after == dragged_layer or drop_location.before == dragged_layer):
+			can_drop = false
+		elif parent_layer and (dragged_layer == parent_layer or document.is_layer_descendent_of_other(parent_layer, dragged_layer)):
+			can_drop = false
+		else:
+			var offset := 0.0 if above else control.size.y
+			drop_hint.position.y = control.global_position.y - global_position.y + offset
+	else:
+		can_drop = false
+	
+	if can_drop:
+		drop_hint.visible = true
+	else:
+		drop_hint.position.y = 0
+		drop_hint.visible = false
+
+	return true
 
 func _layer_drop_data(target_layer : Layer, at_position : Vector2, data : Variant) -> void:
 	drop_hint.visible = false
@@ -145,18 +170,34 @@ func _layer_drop_data(target_layer : Layer, at_position : Vector2, data : Varian
 
 	var above := at_position.y < control.size.y/2
 	var drop_location = _calc_layer_drop_location(target_layer, above)
-	if drop_location.after == dragged_layer or drop_location.before == dragged_layer:
+	if drop_location.parent == dragged_layer.parent_id and (drop_location.after == dragged_layer or drop_location.before == dragged_layer):
 		return
 
-	var current_index = document.layers.find(dragged_layer)
-	if current_index == -1:
+	var parent_layer : Layer = document.find_layer_by_id(drop_location.parent) if drop_location.parent != 0 else null
+	if parent_layer and (dragged_layer == parent_layer or document.is_layer_descendent_of_other(parent_layer, dragged_layer)):
 		return
+
+	var start_index = document.layers.find(dragged_layer)
+	if start_index == -1:
+		return
+
+	var end_index = start_index+1
+
+	if dragged_layer is GroupLayer:
+		end_index = document.find_group_end(start_index)
 
 	var new_index = drop_location.index
-	if new_index > current_index:
-		new_index -= 1
-	document.layers.remove_at(current_index)
-	document.layers.insert(new_index, dragged_layer)
+	assert(new_index <= start_index or new_index >= end_index)
+	if new_index >= end_index:
+		new_index -= end_index - start_index
+	
+	if new_index != start_index:
+		var items : Array[Layer] = []
+		for i in (end_index - start_index):
+			items.push_back(document.layers.pop_at(start_index))
+		for i in (end_index - start_index):
+			document.layers.insert(new_index+i, items[i])
+	dragged_layer.parent_id = drop_location.parent
 
 func _can_drop_data(_at_position : Vector2, data : Variant) -> bool:
 	# Need extra "is Layer" test because it might not even be an object (e.g. Dictionary)
@@ -177,15 +218,30 @@ func _can_drop_data(_at_position : Vector2, data : Variant) -> bool:
 func _drop_data(_at_position : Vector2, data:Variant) -> void:
 	drop_hint.visible = false
 
-	var layer := data as Layer if data is Layer else null
-	if not layer:
+	var dragged_layer := data as Layer if data is Layer else null
+	if not dragged_layer:
 		return
 
 	var document = main.active_canvas.document
 	if not document:
 		return
-	document.layers.erase(layer)
-	document.layers.push_front(layer)
+
+	var start_index = document.layers.find(dragged_layer)
+	if start_index == -1:
+		return
+
+	var end_index = start_index+1
+
+	if dragged_layer is GroupLayer:
+		end_index = document.find_group_end(start_index)
+
+	var items : Array[Layer] = []
+	for i in (end_index - start_index):
+		items.push_back(document.layers.pop_at(start_index))
+	for i in (end_index - start_index):
+		document.layers.push_back(items[i])
+	dragged_layer.parent_id = 0
+
 
 func _on_mouse_exited():
 	drop_hint.visible = false

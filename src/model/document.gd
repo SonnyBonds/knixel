@@ -137,6 +137,76 @@ func clear_selection() -> void:
 	selection_offset = Vector2i.ZERO
 	selection = null
 
+func find_layer_by_id(layer_id : int) -> Layer:
+	# TODO: Table lookup if this turns out too slow
+	for layer in layers:
+		if layer.id == layer_id:
+			return layer
+
+	return null
+
+func find_layer_index(layer_id : int) -> int:
+	var index := 0
+	for layer in layers:
+		if layer.id == layer_id:
+			return index
+		index += 1
+
+	return -1
+
+func find_group_end(group_index : int) -> int:
+	var index := group_index+1
+	var num_layers := len(layers)
+	var stack := []
+	var last_layer_id = layers[group_index].id
+	while index < num_layers:
+		if layers[index].parent_id == last_layer_id:
+			stack.push_back(last_layer_id)
+
+		while not stack.is_empty() and layers[index].parent_id != stack.back():
+			stack.pop_back()
+
+		if stack.is_empty():
+			break
+
+		last_layer_id = layers[index].id
+		index += 1
+
+	return index
+
+
+func is_layer_descendent_of_other(layer : Layer, other : Layer) -> bool:
+	var scan_layer := layer
+
+	while scan_layer.parent_id != 0:
+		scan_layer = find_layer_by_id(scan_layer.parent_id)
+		if not scan_layer or scan_layer == layer:
+			# Broken/cyclic tree
+			# TODO: More complete test, this doesn't catch all
+			# and can end up in infinite loop with broken data.
+			assert(false)
+			return false
+		if scan_layer.id == other.id:
+			return true
+
+	return false
+
+func calc_layer_depth(layer : Layer) -> int:
+	var depth := 0
+
+	var scan_layer := layer
+	while scan_layer.parent_id != 0:
+		depth += 1
+		scan_layer = find_layer_by_id(scan_layer.parent_id)
+		if not scan_layer or scan_layer == layer:
+			# Broken/cyclic tree
+			# TODO: More complete test, this doesn't catch all
+			# and can end up in infinite loop with broken data.
+			assert(false)
+			return false
+
+	return depth
+
 func get_selected_layer() -> Layer:
 	for layer in layers:
 		if layer.id == selected_layer_id:
@@ -163,12 +233,12 @@ func get_new_layer_name(prefix : String = "") -> String:
 func delete_selection():
 	if selection:
 		var layer := get_selected_layer()
-		if layer:
+		if layer and layer is ImageLayer:
 			layer.image = ImageProcessor.erase_mask(layer.image, selection, selection_offset-layer.offset)
 
 func fill(color : Color):
 	var layer := get_selected_layer()
-	if layer:
+	if layer and layer is ImageLayer:
 		var selection_rect := selection.get_used_rect() if selection else Rect2i()
 		if selection_rect.has_area():
 			selection_rect.position += selection_offset
@@ -246,44 +316,97 @@ func save_to_file() -> void:
 	var dict := save(writer)
 	writer.write_blob("document.json", JSON.stringify(dict).to_utf8_buffer())
 
-func _render():
+func _render_layers(framebuffer_pool : ImageProcessor.FramebufferPool, layer_list : Array) -> Layer.RenderOutput:
+	var num_layers := len(layer_list)
+	var last_output : Layer.RenderOutput = null
+	for layer_index in range(num_layers-1, -1, -1):
+		var entry = layer_list[layer_index]
+		var layer = entry.layer
+
+		var layer_output : Layer.RenderOutput = null
+		if layer is GroupLayer:
+			layer_output = entry.output
+		else:
+			layer_output = layer.render(framebuffer_pool)
+		
+		for effect : Effect in layer.effects:
+			if effect.visible:
+				var new_output := effect.render(framebuffer_pool, layer_output.texture)
+				if new_output.texture != layer_output.texture:
+					framebuffer_pool.release_framebuffer_by_texture(layer_output.texture)
+				layer_output.texture = new_output.texture
+				layer_output.offset += new_output.offset
+
+		if not last_output and layer.blend_mode == ImageProcessor.BlendMode.Normal:
+			last_output = layer_output
+		else:
+			if not last_output:
+				var temp_framebuffer := framebuffer_pool.get_framebuffer(Vector2i(32, 32))
+				last_output = Layer.RenderOutput.new()
+				last_output.texture = temp_framebuffer.texture
+
+			var rect := Rect2i(Vector2i.ZERO, ImageProcessor.get_texture_size(last_output.texture))
+			rect = rect.merge(Rect2i(layer_output.offset - last_output.offset, ImageProcessor.get_texture_size(layer_output.texture)))
+
+			var framebuffer = framebuffer_pool.get_framebuffer(rect.size)
+			ImageProcessor.blend_async(framebuffer, 
+				layer_output.texture,
+				layer_output.offset - last_output.offset - rect.position,
+				last_output.texture,
+				-rect.position,
+				Color(1, 1, 1, layer.opacity), 
+				Rect2i(Vector2i.ZERO, framebuffer.size), 
+				layer.blend_mode)
+			
+			framebuffer_pool.release_framebuffer_by_texture(last_output.texture)
+			framebuffer_pool.release_framebuffer_by_texture(layer_output.texture)
+			last_output.texture = framebuffer.texture
+			last_output.offset += rect.position
+
+	return last_output
+
+func _render() -> void:
 	_rendered_layers.clear()
 
 	var framebuffer_pool := ImageProcessor.FramebufferPool.new()
 
 	var canvas_framebuffer = framebuffer_pool.get_framebuffer(size)
-	var tmp_framebuffer = framebuffer_pool.get_framebuffer(size)
+	canvas_framebuffer["layer_id"] = 0
 
-	var num_layers := len(layers)
-
-	var last_output = tmp_framebuffer.texture
-
-	for layer_index in num_layers:
-		var layer := layers[layer_index]
-
-		if layer.visible:
-			var offset := layer.offset
-		
-			var layer_output := layer.render(framebuffer_pool)
-			for effect : Effect in layer.effects:
-				if effect.visible:
-					var new_output := effect.render(framebuffer_pool, layer_output.texture)
-					if new_output.texture != layer_output.texture:
-						framebuffer_pool.release_framebuffer_by_texture(layer_output.texture)
-					layer_output = new_output
-					offset += layer_output.offset
-
-			var framebuffer = framebuffer_pool.get_framebuffer(size)
-			ImageProcessor.blend_async(framebuffer, layer_output.texture, offset, last_output, Vector2i.ZERO, Color(1, 1, 1, layer.opacity), Rect2i(Vector2i.ZERO, framebuffer.size), layer.blend_mode)
-			if layer_output.texture != last_output:
-				framebuffer_pool.release_framebuffer_by_texture(last_output)
-			last_output = framebuffer.texture
-			framebuffer_pool.release_framebuffer_by_texture(layer_output.texture)
-
+	var layer_stack := [{"group_id": 0, "group_layer": null, "layers": []}]
+	for layer in layers:
 		_rendered_layers.push_back(layer.clone())
 
-	ImageProcessor.render_device.texture_copy(last_output, canvas_framebuffer.texture, Vector3.ZERO, Vector3.ZERO, Vector3(size.x, size.y, 0), 0, 0, 0, 0)
-	framebuffer_pool.release_framebuffer_by_texture(last_output)
+		if layer is GroupLayer:
+			var pass_through := layer.blend_mode == ImageProcessor.BlendMode.PassThrough and layer.effects.is_empty()
+			var layer_list = layer_stack.back().layers if pass_through else []
+			layer_stack.push_back({"group_id": layer.id, "group_layer": layer, "layers": layer_list})
+		else:
+			while layer_stack.back().group_id != layer.parent_id:
+				var group_layer = layer_stack.back().group_layer
+				if group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough:
+					var output := _render_layers(framebuffer_pool, layer_stack.back().layers)
+					layer_stack.pop_back()
+					if output:
+						layer_stack.back().layers.push_back({"layer" : group_layer, "output": output})
+				else:
+					layer_stack.pop_back()
+			layer_stack.back().layers.push_back({"layer": layer})
+
+	var final_output : Layer.RenderOutput = null
+	while not layer_stack.is_empty():
+		var group_layer = layer_stack.back().group_layer
+		var output := _render_layers(framebuffer_pool, layer_stack.back().layers)
+		layer_stack.pop_back()
+		if layer_stack.is_empty():
+			final_output = output
+		else:
+			if output:
+				layer_stack.back().layers.push_back({"layer" : group_layer, "output": output})
+
+	var bogus_texture := ImageProcessor.create_texture(Vector2i(16, 16))
+	ImageProcessor.blend_async(canvas_framebuffer, final_output.texture, final_output.offset, bogus_texture, Vector2i.ZERO, Color.WHITE)
+	framebuffer_pool.release_framebuffer_by_texture(final_output.texture)
 
 	ImageProcessor.render_device.submit()
 	ImageProcessor.render_device.sync()
@@ -291,5 +414,7 @@ func _render():
 	var byte_data : PackedByteArray = ImageProcessor.render_device.texture_get_data(canvas_framebuffer.texture, 0)
 	output_image = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBA8, byte_data)
 	output_image.generate_mipmaps()
+
+	ImageProcessor.render_device.free_rid(bogus_texture)
 
 	framebuffer_pool.release_framebuffer(canvas_framebuffer.framebuffer)

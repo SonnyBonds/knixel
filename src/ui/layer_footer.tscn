@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://cxrnrmf00uvwj"]
+[gd_scene load_steps=6 format=3 uid="uid://cxrnrmf00uvwj"]
 
 [ext_resource type="Script" path="res://src/ui/layer_footer.gd" id="1_x85dn"]
 [ext_resource type="Texture2D" uid="uid://or74ngyc8rii" path="res://icons/new_layer.svg" id="2_f7ip8"]
+[ext_resource type="Texture2D" uid="uid://bc24f76o5yhqh" path="res://icons/folder.svg" id="3_puwq8"]
 [ext_resource type="Texture2D" uid="uid://bvyvgoyroq8d5" path="res://icons/new_effect_layer.svg" id="3_q5vyh"]
 [ext_resource type="Texture2D" uid="uid://bge7bwjdo87ww" path="res://icons/delete_layer.svg" id="3_uk4ur"]
 
@@ -25,6 +26,13 @@ custom_minimum_size = Vector2(16, 16)
 layout_mode = 2
 theme_type_variation = &"IconButton"
 icon = ExtResource("2_f7ip8")
+
+[node name="NewFolderButton" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+theme_type_variation = &"IconButton"
+icon = ExtResource("3_puwq8")
 
 [node name="NewEffectLayerButton" type="Button" parent="."]
 unique_name_in_owner = true

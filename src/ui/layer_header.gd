@@ -8,6 +8,7 @@ func _ready():
 	opacity_edit.edit_started.connect(_on_edit_started)
 	opacity_edit.edit_ended.connect(_on_edit_ended)
 	
+	blend_mode_drop_down.items.push_back(DropDown.Item.new("Pass Through", ImageProcessor.BlendMode.PassThrough))
 	blend_mode_drop_down.items.push_back(DropDown.Item.new("Normal", ImageProcessor.BlendMode.Normal))
 	blend_mode_drop_down.items.push_back(DropDown.Item.new("Add", ImageProcessor.BlendMode.Add))
 	blend_mode_drop_down.items.push_back(DropDown.Item.new("Subtract", ImageProcessor.BlendMode.Subtract))
@@ -56,9 +57,15 @@ func _process(_delta):
 	else:
 		opacity_edit.value = layer.opacity * 100
 
+	blend_mode_drop_down.items[0].enabled = layer is GroupLayer
+
+	var blend_mode = layer.blend_mode
+	if blend_mode == ImageProcessor.BlendMode.PassThrough and not layer.effects.is_empty():
+		blend_mode = ImageProcessor.BlendMode.Normal
+
 	var blend_item : DropDown.Item
 	for item in blend_mode_drop_down.items:
-		if item.data == layer.blend_mode:
+		if item.data == blend_mode:
 			blend_item = item
 	blend_mode_drop_down.current_item = blend_item
 
