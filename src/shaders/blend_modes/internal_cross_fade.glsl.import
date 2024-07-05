@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dqplbg2sd3yqo"
+path="res://.godot/imported/internal_cross_fade.glsl-e42b032fb090bbc004fcb7c52c523a9f.res"
+
+[deps]
+
+source_file="res://src/shaders/blend_modes/internal_cross_fade.glsl"
+dest_files=["res://.godot/imported/internal_cross_fade.glsl-e42b032fb090bbc004fcb7c52c523a9f.res"]
+
+[params]
+

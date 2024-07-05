@@ -319,16 +319,61 @@ func save_to_file() -> void:
 func _render_layers(framebuffer_pool : ImageProcessor.FramebufferPool, layer_list : Array) -> Layer.RenderOutput:
 	var num_layers := len(layer_list)
 	var last_output : Layer.RenderOutput = null
+
+	var pushed_groups := {}
+	var held_outputs := []
+
+	# Iterate over layers backwards because that's the order they're to be blended
 	for layer_index in range(num_layers-1, -1, -1):
 		var entry = layer_list[layer_index]
 		var layer = entry.layer
 
 		var layer_output : Layer.RenderOutput = null
+
+		# Group layers are special
 		if layer is GroupLayer:
-			layer_output = entry.output
+			if entry.op == &"push":
+				# If this is the beginning of a pass-through group we store the current compositing state
+				var pushed_output := Layer.RenderOutput.new()
+				pushed_output.texture = last_output.texture
+				pushed_output.offset = last_output.offset
+				pushed_groups[layer.id] = pushed_output
+				held_outputs.push_back(last_output.texture)
+				continue
+			elif entry.op == &"pop":
+				# ...and if it's the end of a pass-through group, we mix the original
+				# state back based on the opacity to partially "undo" whatever the group has done.
+				var held_output = pushed_groups[layer.id]
+				var last_output_size := ImageProcessor.get_texture_size(last_output.texture)
+				var framebuffer = framebuffer_pool.get_framebuffer(last_output_size)
+				ImageProcessor.blend_async(framebuffer, 
+					last_output.texture,
+					Vector2i.ZERO,
+					held_output.texture,
+					held_output.offset - last_output.offset,
+					Color(1, 1, 1, layer.opacity), 
+					Rect2i(Vector2i.ZERO, framebuffer.size),
+					ImageProcessor.BlendMode.InternalCrossFade)
+
+				pushed_groups.erase(layer.id)
+				# With multiple nested pass-through groups the same output may be held
+				# multiple times, we just erase one like a refcount
+				held_outputs.erase(held_output.texture)
+				# and release it if it's fully gone
+				if held_outputs.find(held_output.texture) == -1:
+					framebuffer_pool.release_framebuffer_by_texture(held_output.texture)
+				framebuffer_pool.release_framebuffer_by_texture(last_output.texture)
+				last_output.texture = framebuffer.texture
+				continue
+			else:
+				# If it's a "normal" group, its layers have already been composited and
+				# we're using the result as the output of this layer.
+				assert(entry.op == &"blend")
+				layer_output = entry.output
 		else:
 			layer_output = layer.render(framebuffer_pool)
-		
+
+		# Add any effects...	
 		for effect : Effect in layer.effects:
 			if effect.visible:
 				var new_output := effect.render(framebuffer_pool, layer_output.texture)
@@ -337,9 +382,12 @@ func _render_layers(framebuffer_pool : ImageProcessor.FramebufferPool, layer_lis
 				layer_output.texture = new_output.texture
 				layer_output.offset += new_output.offset
 
+		# If it's the first layer with no blending, we're done and this is the outpu
 		if not last_output and layer.blend_mode == ImageProcessor.BlendMode.Normal:
 			last_output = layer_output
 		else:
+			# If it's the first layer and it has blending, we blend on top of
+			# a dummy texture just to keep things simple even if it's not optimal.
 			if not last_output:
 				var temp_framebuffer := framebuffer_pool.get_framebuffer(Vector2i(32, 32))
 				last_output = Layer.RenderOutput.new()
@@ -357,11 +405,16 @@ func _render_layers(framebuffer_pool : ImageProcessor.FramebufferPool, layer_lis
 				Color(1, 1, 1, layer.opacity), 
 				Rect2i(Vector2i.ZERO, framebuffer.size), 
 				layer.blend_mode)
-			
-			framebuffer_pool.release_framebuffer_by_texture(last_output.texture)
+
+			# Again, only release output if it's not held
+			if held_outputs.find(last_output.texture) == -1:
+				framebuffer_pool.release_framebuffer_by_texture(last_output.texture)
+
 			framebuffer_pool.release_framebuffer_by_texture(layer_output.texture)
 			last_output.texture = framebuffer.texture
 			last_output.offset += rect.position
+
+	assert(held_outputs.is_empty())	
 
 	return last_output
 
@@ -373,29 +426,53 @@ func _render() -> void:
 	var canvas_framebuffer = framebuffer_pool.get_framebuffer(size)
 	canvas_framebuffer["layer_id"] = 0
 
-	# This loop needs some cleanup and comments
-
+	# Keep a stack of groups. First one is not an actual group, but it makes it simpler
+	# to always have an entry in the stack.
 	var layer_stack := [{"group_id": 0, "group_layer": null, "layers": [], "visible": true}]
 	for layer in layers:
+		# Keep a copy of last rendered layers to compare to for figuring out if we need to re-render 
 		_rendered_layers.push_back(layer.clone())
 
 		if layer is GroupLayer:
+			# Check if it's a pass through group. Groups with effects can't be pass-through
 			var pass_through := layer.blend_mode == ImageProcessor.BlendMode.PassThrough and layer.effects.is_empty()
+			# If it _is_ a pass through group, we use the parent group's layer list,
+			# and composite it all in the same run
 			var layer_list = layer_stack.back().layers if pass_through else []
 			layer_stack.push_back({"group_id": layer.id, "group_layer": layer, "layers": layer_list, "visible": layer.visible and layer_stack.back().visible})
+			if pass_through and layer.opacity != 1:
+				# If we need to do opacity blending, we push a marker into the list that it needs handling. 
+				# Since the renderer will render backwards (bottom up) this is the end of the group,
+				# hence the "pop"
+				layer_stack.back().layers.push_back({"layer": layer, "op": &"pop"})
 		else:
+			# When a layer is encountered that doesn't have the current group as parent
+			# we're at the end of the current group and we start unraveling. 
 			while layer_stack.back().group_id != layer.parent_id:
 				var group_layer = layer_stack.back().group_layer
+				# Non-pass through groups get rendered now
 				if layer_stack.back().visible and (group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough or not group_layer.effects.is_empty()):
+					# Render the layers of the current group
 					var output := _render_layers(framebuffer_pool, layer_stack.back().layers)
+					# ...and pop it off the stack
 					layer_stack.pop_back()
 					if output:
-						layer_stack.back().layers.push_back({"layer" : group_layer, "output": output})
+						# If there actually was output (group wasn't empty) we add this to be composited
+						# in the now current group.
+						layer_stack.back().layers.push_back({"layer" : group_layer, "op": &"blend", "output": output})
 				else:
+					# For pass through groups that need blending we add a push-marker that the group starts here
+					# (again, the renderer goes backwards)
+					if group_layer.opacity != 1:
+						layer_stack.back().layers.push_back({"layer": group_layer, "op": &"push"})
 					layer_stack.pop_back()
+
+			# All ending groups have been popped, add the layer to the current group's layer list
 			if layer_stack.back().visible and layer.visible:
 				layer_stack.back().layers.push_back({"layer": layer})
 
+	# This is mostly the same as the popping loop above, popping any groups off the end
+	# of the layer stack
 	var final_output : Layer.RenderOutput = null
 	while not layer_stack.is_empty():
 		var group_layer = layer_stack.back().group_layer
@@ -406,13 +483,18 @@ func _render() -> void:
 				final_output = output
 			else:
 				if output:
-					layer_stack.back().layers.push_back({"layer" : group_layer, "output": output})
+					layer_stack.back().layers.push_back({"layer" : group_layer, "op": &"blend", "output": output})
 		else:
+			if group_layer.opacity != 1:
+				layer_stack.back().layers.push_back({"layer": group_layer, "op": &"push"})
 			layer_stack.pop_back()
 
 
-	var bogus_texture := ImageProcessor.create_texture(Vector2i(16, 16))
-	ImageProcessor.blend_async(canvas_framebuffer, final_output.texture, final_output.offset, bogus_texture, Vector2i.ZERO, Color.WHITE)
+	# Copy the final result to the final texture
+	# TODO: This creates a dummy input texture and blend_async, but it
+	# should really just be a copy
+	var dummy_texture := ImageProcessor.create_texture(Vector2i(16, 16))
+	ImageProcessor.blend_async(canvas_framebuffer, final_output.texture, final_output.offset, dummy_texture, Vector2i.ZERO, Color.WHITE)
 	framebuffer_pool.release_framebuffer_by_texture(final_output.texture)
 
 	ImageProcessor.render_device.submit()
@@ -422,6 +504,6 @@ func _render() -> void:
 	output_image = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBA8, byte_data)
 	output_image.generate_mipmaps()
 
-	ImageProcessor.render_device.free_rid(bogus_texture)
+	ImageProcessor.render_device.free_rid(dummy_texture)
 
 	framebuffer_pool.release_framebuffer(canvas_framebuffer.framebuffer)
