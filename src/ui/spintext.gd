@@ -70,8 +70,6 @@ func _on_button_gui_input(event : InputEvent) -> void:
 
 			if _dragging:
 				edit_ended.emit()
-				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-				button.warp_mouse(_drag_start_pos)
 				_dragging = false
 
 	var motion := event as InputEventMouseMotion
@@ -79,8 +77,6 @@ func _on_button_gui_input(event : InputEvent) -> void:
 		_pending_direction = Direction.NONE
 		_dragged_value -= motion.relative.y * speed
 		value = _fix_value(_dragged_value)
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		button.warp_mouse(_drag_start_pos)
 
 func _fix_value(new_value : float) -> float:
 	new_value = clamp(new_value, min_value, max_value)
