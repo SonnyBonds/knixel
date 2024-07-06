@@ -14,7 +14,7 @@ signal edit_ended
 @export var integer : bool = false
 @export var display_rounded : bool = false
 @export var value : float
-@export var speed : float = 0.5
+@export var speed : float = 1.0
 @export var unit : String
 var _dragging := false
 var _drag_start_pos : Vector2
