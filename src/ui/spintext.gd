@@ -18,6 +18,7 @@ signal edit_ended
 @export var unit : String
 var _dragging := false
 var _drag_start_pos : Vector2
+var _dragged_value : float = 0
 var _pending_direction := Direction.NONE
 
 enum Direction { NONE, UP, DOWN }
@@ -54,6 +55,7 @@ func _on_button_gui_input(event : InputEvent) -> void:
 	if button_event and button_event.button_index == MOUSE_BUTTON_LEFT:
 		if button_event.pressed:
 			_drag_start_pos = button_event.position
+			_dragged_value = value
 			_dragging = true
 			if button_event.position.y < button.size.y/2:
 				_pending_direction = Direction.UP
@@ -75,7 +77,8 @@ func _on_button_gui_input(event : InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
 	if motion and _dragging:
 		_pending_direction = Direction.NONE
-		value = _fix_value(value - motion.relative.y * speed)
+		_dragged_value -= motion.relative.y * speed
+		value = _fix_value(_dragged_value)
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		button.warp_mouse(_drag_start_pos)
 
