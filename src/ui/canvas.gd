@@ -76,8 +76,10 @@ func _process(_delta):
 
 	if _displayed_image != document.output_image:
 		_displayed_image = document.output_image
-		image_control.texture = ImageTexture.create_from_image(_displayed_image)
-		image_control.size = _displayed_image.get_size()
+		var mipmapped := _displayed_image.duplicate()
+		mipmapped.generate_mipmaps()
+		image_control.texture = ImageTexture.create_from_image(mipmapped)
+		image_control.size = mipmapped.get_size()
 
 	var ui_scale = get_viewport().content_scale_factor
 	if image_control.scale.x > 1/ui_scale:

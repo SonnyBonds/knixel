@@ -7,7 +7,7 @@ var active_canvas : Canvas
 var _clipboard : Image
 
 enum { FILE_NEW, FILE_OPEN, FILE_CLOSE, FILE_SAVE, FILE_SAVE_AS, FILE_EXPORT, FILE_EXPORT_AGAIN, FILE_QUIT,
-	   EDIT_UNDO, EDIT_REDO, EDIT_CUT, EDIT_COPY, EDIT_PASTE, EDIT_SELECT_ALL, EDIT_FILL_FOREGROUND, EDIT_FILL_BACKGROUND, EDIT_CLEAR_SELECTION, EDIT_DELETE,
+	   EDIT_UNDO, EDIT_REDO, EDIT_CUT, EDIT_COPY, EDIT_COPY_MERGED, EDIT_PASTE, EDIT_SELECT_ALL, EDIT_FILL_FOREGROUND, EDIT_FILL_BACKGROUND, EDIT_CLEAR_SELECTION, EDIT_DELETE,
 	   IMAGE_RESIZE_IMAGE, IMAGE_RESIZE_CANVAS }
 
 @onready var canvas_container := %CanvasContainer as TabContainer
@@ -53,6 +53,7 @@ func _ready():
 	%EditMenu.get_popup().add_separator()
 	%EditMenu.get_popup().add_item("Cut", EDIT_CUT, KEY_MASK_CTRL | KEY_X)
 	%EditMenu.get_popup().add_item("Copy", EDIT_COPY, KEY_MASK_CTRL | KEY_C)
+	%EditMenu.get_popup().add_item("Copy Merged", EDIT_COPY_MERGED, KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_C)
 	%EditMenu.get_popup().add_item("Paste", EDIT_PASTE, KEY_MASK_CTRL | KEY_V)
 	%EditMenu.get_popup().add_separator()
 	%EditMenu.get_popup().add_item("Select All", EDIT_SELECT_ALL, KEY_MASK_CTRL | KEY_A)
@@ -236,6 +237,8 @@ func _on_menu_pressed(id : int) -> void:
 			cut()
 		EDIT_COPY:
 			copy()
+		EDIT_COPY_MERGED:
+			copy_merged()
 		EDIT_PASTE:
 			paste()
 		EDIT_DELETE:
@@ -388,6 +391,25 @@ func copy() -> void:
 		return
 
 	var image := layer.extract_masked_image(active_canvas.document.selection, active_canvas.document.selection_offset)
+
+	# TODO: System clipboard
+	DisplayServer.clipboard_set("")
+	_clipboard = image
+
+func copy_merged() -> void:
+	if not active_canvas:
+		return
+
+	var document := active_canvas.document
+
+	var image := active_canvas.document.output_image.duplicate()
+	image.clear_mipmaps()
+	image = ImageProcessor.apply_mask(active_canvas.document.output_image, document.selection, document.selection_offset)
+
+	var rect : Rect2i = image.get_used_rect()
+	if rect.position != Vector2i(0, 0) or rect.size != image.get_size():
+		image.blit_rect(image, rect, Vector2i(0, 0))
+		image.crop(rect.size.x, rect.size.y)
 
 	# TODO: System clipboard
 	DisplayServer.clipboard_set("")

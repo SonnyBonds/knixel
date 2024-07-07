@@ -502,7 +502,6 @@ func _render() -> void:
 
 	var byte_data : PackedByteArray = ImageProcessor.render_device.texture_get_data(canvas_framebuffer.texture, 0)
 	output_image = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBA8, byte_data)
-	output_image.generate_mipmaps()
 
 	ImageProcessor.render_device.free_rid(dummy_texture)
 
