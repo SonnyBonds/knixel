@@ -17,9 +17,9 @@ signal edit_ended
 @export var speed : float = 1.0
 @export var unit : String
 var _dragging := false
-var _drag_start_pos : Vector2
 var _dragged_value : float = 0
 var _pending_direction := Direction.NONE
+var _last_drag_pos : Vector2
 
 enum Direction { NONE, UP, DOWN }
 
@@ -54,7 +54,7 @@ func _on_button_gui_input(event : InputEvent) -> void:
 	var button_event := event as InputEventMouseButton
 	if button_event and button_event.button_index == MOUSE_BUTTON_LEFT:
 		if button_event.pressed:
-			_drag_start_pos = button_event.position
+			_last_drag_pos = button_event.global_position
 			_dragged_value = value
 			_dragging = true
 			if button_event.position.y < button.size.y/2:
@@ -75,7 +75,11 @@ func _on_button_gui_input(event : InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
 	if motion and _dragging:
 		_pending_direction = Direction.NONE
-		_dragged_value -= motion.relative.y * speed
+
+		# There's a bug in motion.relative in Popups so we'll have to roll our own for now.
+		var delta := motion.global_position - _last_drag_pos
+		_dragged_value -= delta.y * speed
+		_last_drag_pos = motion.global_position
 		value = _fix_value(_dragged_value)
 
 func _fix_value(new_value : float) -> float:
