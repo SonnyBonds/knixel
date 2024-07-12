@@ -4,6 +4,7 @@ class_name KnixelColorPicker
 
 signal commit
 
+## Picker color is in srgb for internal simplicity
 var color : Color = Color.WHITE
 
 var _last_saturation : float = 1

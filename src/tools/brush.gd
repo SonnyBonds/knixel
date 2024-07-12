@@ -161,7 +161,7 @@ func _update_blended_image():
 		ImageProcessor.render_device.sync()
 
 		var byte_data : PackedByteArray = ImageProcessor.render_device.texture_get_data(blended_framebuffer.texture, 0)
-		layer.image = Image.create_from_data(rect.size.x, rect.size.y, false, Image.FORMAT_RGBA8, byte_data)
+		layer.image = Image.create_from_data(rect.size.x, rect.size.y, false, Image.FORMAT_RGBAF, byte_data)
 		layer.offset = rect.position
 		_framebuffer_pool.release_framebuffer(blended_framebuffer.framebuffer)
 
@@ -184,7 +184,11 @@ func _update_brush():
 
 		# TODO: Should probably be able to use the GradientTexture right away with get_rid 
 		# or something, but couldn't manage getting that working so let's just copy it.
-		_brush_texture = ImageProcessor.create_texture_from_image(gradient.get_image())
+		# Actually, should generate the gradient ourselves to get RGBAF and better shape
+		# control.
+		var gradient_image := gradient.get_image()
+		gradient_image.convert(Image.FORMAT_RGBAF)
+		_brush_texture = ImageProcessor.create_texture_from_image(gradient_image)
 		_brush_hardness = hardness
 		_brush_radius = radius
 

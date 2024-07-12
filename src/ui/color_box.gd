@@ -23,14 +23,17 @@ func _ready():
 	_process(0)
 
 func _process(_delta):
-	$ColorRect.modulate = color
-	if not _picker.visible:
-		_picker.color = color
+	if _picker.is_visible_in_tree():
+		color = _picker.color.srgb_to_linear()
+	else:
+		_picker.color = color.linear_to_srgb()
+
+	$ColorRect.modulate = color.linear_to_srgb()
 
 func _on_pressed():
+	_picker.color = color
 	_popup.popup_on_parent(Rect2i(Vector2i(64, 100), _popup.size))
 
 func _on_picker_commit():
-	color = _picker.color
 	_popup.hide()
 	commit.emit()

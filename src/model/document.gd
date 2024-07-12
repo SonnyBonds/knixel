@@ -114,7 +114,7 @@ func ensure_selection_rect(rect : Rect2i) -> void:
 
 	if not selection:
 		selection_offset = rect.position
-		selection = Image.create(max(8, rect.size.x), max(8, rect.size.y), false, Image.FORMAT_R8)
+		selection = Image.create(max(8, rect.size.x), max(8, rect.size.y), false, Image.FORMAT_RF)
 		return
 
 	var current_rect = Rect2i(selection_offset, selection.get_size())
@@ -130,7 +130,7 @@ func ensure_selection_rect(rect : Rect2i) -> void:
 func select_all() -> void:
 	# TODO: Make sure padding isn't required
 	selection_offset = Vector2i(-16, -16)
-	selection = Image.create(size.x+32, size.y+32, false, Image.FORMAT_R8)
+	selection = Image.create(size.x+32, size.y+32, false, Image.FORMAT_RF)
 	selection.fill_rect(Rect2i(16, 16, size.x, size.y), Color.WHITE)
 
 func clear_selection() -> void:
@@ -493,16 +493,19 @@ func _render() -> void:
 	# Copy the final result to the final texture
 	# TODO: This creates a dummy input texture and blend_async, but it
 	# should really just be a copy
-	var dummy_texture := ImageProcessor.create_texture(Vector2i(16, 16))
-	ImageProcessor.blend_async(canvas_framebuffer, final_output.texture, final_output.offset, dummy_texture, Vector2i.ZERO, Color.WHITE)
-	framebuffer_pool.release_framebuffer_by_texture(final_output.texture)
+	var dummy_texture : RID = RID()
+	if final_output:
+		dummy_texture = ImageProcessor.create_texture(Vector2i(16, 16))
+		ImageProcessor.blend_async(canvas_framebuffer, final_output.texture, final_output.offset, dummy_texture, Vector2i.ZERO, Color.WHITE)
+		framebuffer_pool.release_framebuffer_by_texture(final_output.texture)
 
 	ImageProcessor.render_device.submit()
 	ImageProcessor.render_device.sync()
 
 	var byte_data : PackedByteArray = ImageProcessor.render_device.texture_get_data(canvas_framebuffer.texture, 0)
-	output_image = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBA8, byte_data)
+	output_image = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBAF, byte_data)
 
-	ImageProcessor.render_device.free_rid(dummy_texture)
+	if dummy_texture:
+		ImageProcessor.render_device.free_rid(dummy_texture)
 
 	framebuffer_pool.release_framebuffer(canvas_framebuffer.framebuffer)

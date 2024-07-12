@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dpblm0anmikn1"
+path="res://.godot/imported/linear_to_srgb.glsl-6a4ed6c4e7ab7fe2e44f10915aea0e9c.res"
+
+[deps]
+
+source_file="res://src/shaders/operations/linear_to_srgb.glsl"
+dest_files=["res://.godot/imported/linear_to_srgb.glsl-6a4ed6c4e7ab7fe2e44f10915aea0e9c.res"]
+
+[params]
+

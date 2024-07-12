@@ -164,7 +164,7 @@ func _update_blended_image():
 		ImageProcessor.render_device.sync()
 
 		var byte_data : PackedByteArray = ImageProcessor.render_device.texture_get_data(blended_framebuffer.texture, 0)
-		layer.image = Image.create_from_data(rect.size.x, rect.size.y, false, Image.FORMAT_RGBA8, byte_data)
+		layer.image = Image.create_from_data(rect.size.x, rect.size.y, false, Image.FORMAT_RGBAF, byte_data)
 		layer.offset = rect.position
 		_framebuffer_pool.release_framebuffer(blended_framebuffer.framebuffer)
 

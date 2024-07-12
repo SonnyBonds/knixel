@@ -29,7 +29,7 @@ func _on_new_layer_pressed() -> void:
 
 	var document = main.active_canvas.document
 	var layer := ImageLayer.new()
-	layer.image = Image.create(8, 8, false, Image.FORMAT_RGBA8)
+	layer.image = Image.create(8, 8, false, Image.FORMAT_RGBAF)
 	layer.name = document.get_new_layer_name()
 	document.layers.push_front(layer)
 	document.selected_layer_id = layer.id

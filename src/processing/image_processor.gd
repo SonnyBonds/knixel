@@ -219,6 +219,34 @@ static func _create_colorize_pipeline(rd : RenderingDevice) -> ProcessingPipelin
 
 static var _colorize_pipeline := _create_colorize_pipeline(render_device)
 
+static func _create_linear_to_srgb_pipeline(rd : RenderingDevice) -> ProcessingPipeline:
+	var pipeline := ProcessingPipeline.new(rd)
+
+	var blend_attachment = RDPipelineColorBlendStateAttachment.new()
+	blend_attachment.enable_blend = false
+
+	pipeline.color_blend_state.attachments = [blend_attachment]
+	
+	pipeline.shader = rd.shader_create_from_spirv(preload("res://src/shaders/operations/linear_to_srgb.glsl").get_spirv())
+
+	return pipeline
+
+static var _linear_to_srgb_pipeline := _create_linear_to_srgb_pipeline(render_device)
+
+static func _create_srgb_to_linear_pipeline(rd : RenderingDevice) -> ProcessingPipeline:
+	var pipeline := ProcessingPipeline.new(rd)
+
+	var blend_attachment = RDPipelineColorBlendStateAttachment.new()
+	blend_attachment.enable_blend = false
+
+	pipeline.color_blend_state.attachments = [blend_attachment]
+	
+	pipeline.shader = rd.shader_create_from_spirv(preload("res://src/shaders/operations/srgb_to_linear.glsl").get_spirv())
+
+	return pipeline
+
+static var _srgb_to_linear_pipeline := _create_srgb_to_linear_pipeline(render_device)
+
 static var _rect_index_buffer : RID
 static var _rect_index_array : RID
 
@@ -259,7 +287,7 @@ static func create_texture(size : Vector2i, usage_bits : int = RenderingDevice.T
 	var format := RDTextureFormat.new()
 	format.width = size.x
 	format.height = size.y
-	format.format = RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
+	format.format = RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT
 	format.usage_bits = usage_bits
 
 	return render_device.texture_create(format, texture_view, [])
@@ -268,10 +296,10 @@ static func create_texture_from_image(image : Image, usage_bits : int = Renderin
 	var format := RDTextureFormat.new()
 	format.width = image.get_width()
 	format.height = image.get_height()
-	if image.get_format() == Image.FORMAT_RGBA8:
-		format.format = RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
-	elif image.get_format() == Image.FORMAT_R8:
-		format.format = RenderingDevice.DATA_FORMAT_R8_UNORM
+	if image.get_format() == Image.FORMAT_RGBAF:
+		format.format = RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT
+	elif image.get_format() == Image.FORMAT_RF:
+		format.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
 	else:
 		assert(false, "Unsupported image format: " + str(image.get_format()))
 	format.usage_bits = usage_bits
@@ -365,7 +393,7 @@ static func _output_mask(image : Image, mask : Image, offset : Vector2i, color :
 	render_device.sync()
 
 	var byte_data : PackedByteArray = render_device.texture_get_data(output_texture, 0)
-	var new_image := Image.create_from_data(image.get_width(), image.get_height(), false, Image.FORMAT_RGBA8, byte_data)
+	var new_image := Image.create_from_data(image.get_width(), image.get_height(), false, Image.FORMAT_RGBAF, byte_data)
 
 	rids.reverse()
 	for rid in rids:
@@ -381,6 +409,96 @@ static func erase_mask(image : Image, mask : Image, offset : Vector2i = Vector2i
 
 static func apply_mask(image : Image, mask : Image, offset : Vector2i = Vector2i.ZERO) -> Image:
 	return _output_mask(image, mask, offset, Color.WHITE, _apply_mask_pipeline)
+
+static func linear_to_srgb(image : Image) -> Image:
+	var rids : Array[RID] = []
+
+	var output_texture := create_texture_from_image(image, RenderingDevice.TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT)
+	rids.push_back(output_texture)
+
+	var framebuffer := render_device.framebuffer_create([output_texture])
+	rids.push_back(framebuffer)
+
+	var image_texture := create_texture_from_image(image)
+	rids.push_back(image_texture)
+
+	var sampler_state := RDSamplerState.new()
+	var sampler = render_device.sampler_create(sampler_state)
+	rids.push_back(sampler)
+
+	var tex_uniform = RDUniform.new()
+	tex_uniform.binding = 0
+	tex_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
+	tex_uniform.add_id(sampler)
+	tex_uniform.add_id(image_texture)
+	
+	var uniform_set := render_device.uniform_set_create([tex_uniform], _linear_to_srgb_pipeline.shader, 0)
+	rids.push_back(uniform_set)
+
+	var clear_colors = PackedColorArray([Color(0, 0, 0, 0)])
+	var draw_list = render_device.draw_list_begin(framebuffer, RenderingDevice.INITIAL_ACTION_KEEP, RenderingDevice.FINAL_ACTION_READ, RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_DISCARD, clear_colors)
+	render_device.draw_list_bind_render_pipeline(draw_list, _linear_to_srgb_pipeline.get_for_framebuffer(framebuffer))
+	render_device.draw_list_bind_index_array(draw_list, _rect_index_array)
+	render_device.draw_list_bind_uniform_set(draw_list, uniform_set, 0)
+	render_device.draw_list_draw(draw_list, true, 1)
+	render_device.draw_list_end()
+
+	render_device.submit()
+	render_device.sync()
+
+	var byte_data : PackedByteArray = render_device.texture_get_data(output_texture, 0)
+	var new_image := Image.create_from_data(image.get_width(), image.get_height(), false, Image.FORMAT_RGBAF, byte_data)
+
+	rids.reverse()
+	for rid in rids:
+		render_device.free_rid(rid)
+
+	return new_image
+
+static func srgb_to_linear(image : Image) -> Image:
+	var rids : Array[RID] = []
+
+	var output_texture := create_texture_from_image(image, RenderingDevice.TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT)
+	rids.push_back(output_texture)
+
+	var framebuffer := render_device.framebuffer_create([output_texture])
+	rids.push_back(framebuffer)
+
+	var image_texture := create_texture_from_image(image)
+	rids.push_back(image_texture)
+
+	var sampler_state := RDSamplerState.new()
+	var sampler = render_device.sampler_create(sampler_state)
+	rids.push_back(sampler)
+
+	var tex_uniform = RDUniform.new()
+	tex_uniform.binding = 0
+	tex_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
+	tex_uniform.add_id(sampler)
+	tex_uniform.add_id(image_texture)
+	
+	var uniform_set := render_device.uniform_set_create([tex_uniform], _srgb_to_linear_pipeline.shader, 0)
+	rids.push_back(uniform_set)
+
+	var clear_colors = PackedColorArray([Color(0, 0, 0, 0)])
+	var draw_list = render_device.draw_list_begin(framebuffer, RenderingDevice.INITIAL_ACTION_KEEP, RenderingDevice.FINAL_ACTION_READ, RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_DISCARD, clear_colors)
+	render_device.draw_list_bind_render_pipeline(draw_list, _srgb_to_linear_pipeline.get_for_framebuffer(framebuffer))
+	render_device.draw_list_bind_index_array(draw_list, _rect_index_array)
+	render_device.draw_list_bind_uniform_set(draw_list, uniform_set, 0)
+	render_device.draw_list_draw(draw_list, true, 1)
+	render_device.draw_list_end()
+
+	render_device.submit()
+	render_device.sync()
+
+	var byte_data : PackedByteArray = render_device.texture_get_data(output_texture, 0)
+	var new_image := Image.create_from_data(image.get_width(), image.get_height(), false, Image.FORMAT_RGBAF, byte_data)
+
+	rids.reverse()
+	for rid in rids:
+		render_device.free_rid(rid)
+
+	return new_image
 
 static func blur_async(framebuffer : RID, src_texture : RID, radius : float, direction : Vector2i, offset : Vector2i):
 	var rids : Array[RID] = []
@@ -518,7 +636,7 @@ static func blend(src : Image, dst : Image, offset : Vector2i, color : Color) ->
 	render_device.sync()
 
 	var byte_data : PackedByteArray = render_device.texture_get_data(output_texture, 0)
-	var new_image := Image.create_from_data(dst.get_width(), dst.get_height(), false, Image.FORMAT_RGBA8, byte_data)
+	var new_image := Image.create_from_data(dst.get_width(), dst.get_height(), false, Image.FORMAT_RGBAF, byte_data)
 
 	rids.reverse()
 	for rid in rids:

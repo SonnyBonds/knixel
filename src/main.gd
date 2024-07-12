@@ -183,7 +183,7 @@ func _on_new_dialog_submitted(dialog : NewDialog) -> void:
 	if dialog.width < 1 or dialog.width > 4096 or dialog.height < 1 or dialog.height > 4096:
 		return
 
-	var image := Image.create(dialog.width, dialog.height, false, Image.FORMAT_RGBA8)
+	var image := Image.create(dialog.width, dialog.height, false, Image.FORMAT_RGBAF)
 	if not image:
 		return
 
@@ -336,7 +336,8 @@ func load_from_file(path : String) -> void:
 
 	var image = Image.new()
 	if image.load(path) == Error.OK:
-		image.convert(Image.FORMAT_RGBA8)
+		image.convert(Image.FORMAT_RGBAF)
+		image = ImageProcessor.srgb_to_linear(image)
 		_create_document_from_image(image, path.get_file())
 		return
 
@@ -434,7 +435,7 @@ func _get_clipboard_image() -> Image:
 	var image : Image
 	if DisplayServer.clipboard_has_image():
 		image = DisplayServer.clipboard_get_image()
-		image.convert(Image.FORMAT_RGBA8)
+		image.convert(Image.FORMAT_RGBAF)
 	else:
 		image = _clipboard as Image
 

@@ -88,7 +88,7 @@ max_value = 255.0
 integer = true
 display_rounded = true
 value = 255.0
-speed = 2.0
+speed = 1.0
 
 [node name="LineEdit" parent="GridContainer/RedEdit" index="0"]
 focus_next = NodePath("../../GreenEdit/LineEdit")
@@ -106,7 +106,7 @@ max_value = 255.0
 integer = true
 display_rounded = true
 value = 255.0
-speed = 2.0
+speed = 1.0
 
 [node name="LineEdit" parent="GridContainer/GreenEdit" index="0"]
 focus_next = NodePath("../../BlueEdit/LineEdit")
@@ -124,7 +124,7 @@ max_value = 255.0
 integer = true
 display_rounded = true
 value = 255.0
-speed = 2.0
+speed = 1.0
 
 [node name="LineEdit" parent="GridContainer/BlueEdit" index="0"]
 focus_next = NodePath("../../HueEdit/LineEdit")
@@ -150,7 +150,7 @@ max_value = 255.0
 integer = true
 display_rounded = true
 value = 255.0
-speed = 2.0
+speed = 1.0
 
 [node name="LineEdit" parent="GridContainer/HueEdit" index="0"]
 focus_next = NodePath("../../SaturationEdit/LineEdit")
@@ -168,7 +168,7 @@ max_value = 255.0
 integer = true
 display_rounded = true
 value = 255.0
-speed = 2.0
+speed = 1.0
 
 [node name="LineEdit" parent="GridContainer/SaturationEdit" index="0"]
 focus_next = NodePath("../../ValueEdit/LineEdit")
@@ -186,7 +186,7 @@ max_value = 255.0
 integer = true
 display_rounded = true
 value = 255.0
-speed = 2.0
+speed = 1.0
 
 [node name="LineEdit" parent="GridContainer/ValueEdit" index="0"]
 focus_next = NodePath("../../HexEdit")

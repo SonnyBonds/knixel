@@ -1,7 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://d3viskrap4427"]
+[gd_scene load_steps=7 format=3 uid="uid://d3viskrap4427"]
 
 [ext_resource type="Script" path="res://src/ui/canvas.gd" id="1_yvq2t"]
+[ext_resource type="Shader" path="res://src/shaders/canvas.gdshader" id="2_mvhay"]
 [ext_resource type="Shader" path="res://src/ui/selection.gdshader" id="2_u7s88"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_evcl8"]
+shader = ExtResource("2_mvhay")
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_t8c2n"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_q7rfp"]
 shader = ExtResource("2_u7s88")
@@ -26,9 +32,11 @@ theme_type_variation = &"CheckerForeground"
 
 [node name="Image" type="TextureRect" parent="."]
 unique_name_in_owner = true
+material = SubResource("ShaderMaterial_evcl8")
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
+texture = SubResource("PlaceholderTexture2D_t8c2n")
 stretch_mode = 2
 
 [node name="Selection" type="TextureRect" parent="Image"]

@@ -262,9 +262,12 @@ static func load(dict : Dictionary, reader : Reader, expected_type_id : String =
 					var data = reader.read_blob_reference(value_dict)
 					if data is ErrorResult:
 						return data
+					# TODO: Use another format to support HDR etc
 					if (value_dict.path as String).get_extension() == "png":
 						var image := Image.new()
 						image.load_png_from_buffer(data)
+						image.convert(Image.FORMAT_RGBAF)
+						image = ImageProcessor.srgb_to_linear(image)
 						obj.set(prop.name, image)
 					else:
 						return ErrorResult.new("Expected PNG blob for image in property '%s' on '%s'." % [prop.name, type_id])
@@ -302,7 +305,10 @@ func save(writer : Writer) -> Dictionary:
 				dict[prop.name] = arr
 			elif prop.type == TYPE_OBJECT:
 				if prop.hint_string == "Image":
-					dict[prop.name] = writer.write_blob_reference(prop.name + ".png", get(prop.name).save_png_to_buffer())
+					# TODO: Use another format to support HDR etc
+					var image := ImageProcessor.linear_to_srgb(get(prop.name) as Image)
+					image.convert(Image.FORMAT_RGBA8)
+					dict[prop.name] = writer.write_blob_reference(prop.name + ".png", image.save_png_to_buffer())
 				else:
 					# TODO: Error somehow
 					pass
