@@ -37,5 +37,5 @@ void main()
     vec4 dst = texelFetch(dst_tex, ivec2(gl_FragCoord) - inputs.dst_offset, 0);
 
     output_color.rgb = dst.rgb;
-    output_color.a = dst.a - src.a;
+    output_color.a = max(dst.a - src.a, 0.0);
 }
