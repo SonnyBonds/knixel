@@ -1,5 +1,6 @@
 class_name BoxSelectTool extends Tool
 
+var _image_control : Control
 var _overlay : Control
 var _drag_start : Vector2
 var _drag_pos : Vector2
@@ -16,6 +17,7 @@ enum Mode { ADD, SUBTRACT, REPLACE }
 func activate(canvas : Canvas) -> void:
 	super(canvas)
 	canvas.gui_input.connect(_gui_event)
+	_image_control = canvas.get_node("%Image")
 	_overlay = canvas.get_node("%Overlay")
 	_overlay.draw.connect(_draw_overlay)
 	_overlay.queue_redraw()
@@ -165,8 +167,8 @@ func select_box(rect : Rect2i, mode : Mode) -> void:
 func _draw_overlay():
 	if _drag_state == State.BOX:
 		var rect := calc_rect(_drag_start, _drag_pos)
-		var v1 = rect.position
-		var v2 = v1 + rect.size
+		var v1 = canvas.pos_from_image(rect.position)
+		var v2 = canvas.pos_from_image(Vector2(rect.position + rect.size))
 
 		_overlay.draw_line(Vector2(v1.x, v1.y), Vector2(v2.x, v1.y), Color.BLACK)
 		_overlay.draw_line(Vector2(v2.x, v1.y), Vector2(v2.x, v2.y), Color.BLACK)

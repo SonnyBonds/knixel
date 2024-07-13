@@ -46,9 +46,12 @@ material = SubResource("ShaderMaterial_q7rfp")
 layout_mode = 0
 stretch_mode = 2
 
-[node name="Overlay" type="Control" parent="Image"]
+[node name="Overlay" type="Control" parent="."]
 unique_name_in_owner = true
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
