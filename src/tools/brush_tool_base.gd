@@ -5,6 +5,7 @@ class_name BrushToolBase extends Tool
 
 enum Mode { UNKNOWN, BRUSH, ERASER }
 
+var _image_control : Control
 var _overlay : Control
 var _painting : bool
 var _last_splat_point : Vector2
@@ -27,6 +28,7 @@ func activate(canvas : Canvas) -> void:
 	assert(_mode != Mode.UNKNOWN)
 
 	canvas.gui_input.connect(_gui_event)
+	_image_control = canvas.get_node("%Image")
 	_overlay = canvas.get_node("%Overlay")
 	_overlay.draw.connect(_draw_overlay)
 	_overlay.queue_redraw()
@@ -251,7 +253,11 @@ func _try_splat(pos : Vector2, force : bool = false):
 		force = false
 
 func _draw_overlay():
-	pass
+	var pos := _overlay.get_local_mouse_position()
+	var scale := _image_control.scale.x
+	_overlay.draw_circle(pos, radius * scale + 1, Color.BLACK, false, -1.0, true)
+	_overlay.draw_circle(pos, radius * scale, Color.WHITE, false, -1.0, true)
 
 func process():
 	_process_queue()
+	_overlay.queue_redraw()
