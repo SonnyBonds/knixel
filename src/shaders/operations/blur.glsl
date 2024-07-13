@@ -35,13 +35,15 @@ layout( push_constant ) uniform constants
 
 float gaussian(float x, float sigma)
 {
-    return exp(-(x * x) / (2.0 * sigma * sigma)) / (2.0 * 3.14159265358979323846 * sigma * sigma);
+    sigma = 2.0 * sigma * sigma;
+    return exp(-(x * x) / sigma) / (sigma * 3.14159265358979323846);
 }
 
 void main()
 {
-    float sigma = max(0.00001, float(inputs.radius) / 2.0); // standard deviation
-    vec4 weightSum = vec4(0.0);
+    float sigma = max(0.00001, float(inputs.radius) / 2.0);
+    // TODO: Maybe this could be made smarter, but add a tiny base value to avoid division by zero
+    vec4 weightSum = vec4(vec3(0.00001), 0.0);
     vec4 result = vec4(0.0);
     
     int intRadius = int(ceil(inputs.radius));
@@ -54,6 +56,6 @@ void main()
         weightSum += weight;
     }
 
-    result /= weightSum; // normalize the result
+    result /= weightSum; // Normalize the result
     output_color = result;
 }
