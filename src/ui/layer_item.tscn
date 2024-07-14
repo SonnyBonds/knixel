@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://ejonsuwbsvs6"]
+[gd_scene load_steps=4 format=3 uid="uid://ejonsuwbsvs6"]
 
 [ext_resource type="Script" path="res://src/ui/layer_item.gd" id="1_0mhma"]
+[ext_resource type="PackedScene" uid="uid://c8xgt3lecphj0" path="res://src/ui/editable_label.tscn" id="2_e4h70"]
 [ext_resource type="PackedScene" uid="uid://b73as78ofg6vx" path="res://src/ui/effect_list.tscn" id="2_nlvp6"]
 
 [node name="LayerItem" type="PanelContainer"]
@@ -56,10 +57,12 @@ unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 
-[node name="NameLabel" type="Label" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
+[node name="NameLabel" parent="VBoxContainer/HeaderPanel/HBoxContainer" instance=ExtResource("2_e4h70")]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Layer"
+
+[node name="Padding2" type="Control" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
+layout_mode = 2
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2

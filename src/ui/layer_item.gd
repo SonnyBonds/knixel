@@ -5,12 +5,20 @@ var layer : Layer
 var indent : int
 
 @onready var _effect_list := %EffectList as EffectList
-var _displayed_image : Image
+@onready var _name_label := %NameLabel as EditableLabel
+#var _displayed_image : Image
 
 func _ready():
 	%VisibilityButton.pressed.connect(_on_visible_clicked)
+	_name_label.commit.connect(_on_name_comitted)
+
+	_refresh_indent()
 
 func _enter_tree():
+	if is_node_ready():
+		_refresh_indent()
+
+func _refresh_indent():
 	_process(0)
 	%Indent.custom_minimum_size.x = indent * 8
 
@@ -28,7 +36,7 @@ func _process(_delta):
 	else:
 		theme_type_variation = "LayerPanel"
 		%HeaderPanel.theme_type_variation = "LayerHeaderPanel"
-	%NameLabel.text = layer.name
+	_name_label.text = layer.name
 	%VisibilityButton.button_pressed = layer.visible
 
 	#if _displayed_image != layer.output:
@@ -44,3 +52,6 @@ func _process(_delta):
 
 func _on_visible_clicked():
 	layer.visible = !layer.visible
+
+func _on_name_comitted():
+	layer.name = _name_label.text
