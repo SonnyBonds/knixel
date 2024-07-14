@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://bited2yow3vq0"]
+
+[ext_resource type="Texture2D" uid="uid://0aeifdy2xyvm" path="res://icons/expand_closed.svg" id="1_p6wqt"]
+[ext_resource type="Script" path="res://src/ui/expand_button.gd" id="2_ay3fd"]
+
+[node name="ExpandButton" type="Button"]
+custom_minimum_size = Vector2(8, 16)
+offset_right = 4.0
+offset_bottom = 4.0
+focus_mode = 0
+theme_type_variation = &"ExpandButton"
+toggle_mode = true
+action_mode = 0
+icon = ExtResource("1_p6wqt")
+expand_icon = true
+script = ExtResource("2_ay3fd")

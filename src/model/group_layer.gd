@@ -1,5 +1,7 @@
 class_name GroupLayer extends Layer
 
+@export var expanded : bool = true
+
 func _init():
     super()
     blend_mode = ImageProcessor.BlendMode.PassThrough

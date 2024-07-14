@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=58 format=3 uid="uid://cw6hjrmx8t6v5"]
+[gd_resource type="Theme" load_steps=59 format=3 uid="uid://cw6hjrmx8t6v5"]
 
 [ext_resource type="Texture2D" uid="uid://c3y06m16epu8m" path="res://icons/updown.svg" id="1_6lfhe"]
 [ext_resource type="Texture2D" uid="uid://v1slcb1iji3l" path="res://icons/checker.svg" id="1_f25g2"]
@@ -201,6 +201,8 @@ content_margin_top = 2.0
 content_margin_bottom = 2.0
 bg_color = Color(0.3, 0.3, 0.3, 1)
 border_width_left = 2
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_67170"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pmtp6"]
 
@@ -410,6 +412,18 @@ EffectPanel/base_type = &"PanelContainer"
 EffectPanel/styles/panel = SubResource("StyleBoxFlat_u4qe8")
 EffectPanelSelected/base_type = &"PanelContainer"
 EffectPanelSelected/styles/panel = SubResource("StyleBoxFlat_o4xc6")
+ExpandButton/base_type = &"Button"
+ExpandButton/styles/disabled = SubResource("StyleBoxEmpty_67170")
+ExpandButton/styles/disabled_mirrored = SubResource("StyleBoxEmpty_67170")
+ExpandButton/styles/focus = SubResource("StyleBoxEmpty_67170")
+ExpandButton/styles/hover = SubResource("StyleBoxEmpty_67170")
+ExpandButton/styles/hover_mirrored = SubResource("StyleBoxEmpty_67170")
+ExpandButton/styles/hover_pressed = SubResource("StyleBoxEmpty_67170")
+ExpandButton/styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_67170")
+ExpandButton/styles/normal = SubResource("StyleBoxEmpty_67170")
+ExpandButton/styles/normal_mirrored = SubResource("StyleBoxEmpty_67170")
+ExpandButton/styles/pressed = SubResource("StyleBoxEmpty_67170")
+ExpandButton/styles/pressed_mirrored = SubResource("StyleBoxEmpty_67170")
 IconButton/base_type = &"Button"
 IconButton/constants/icon_max_width = 16
 IconButton/styles/disabled = SubResource("StyleBoxEmpty_pmtp6")

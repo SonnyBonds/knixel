@@ -20,11 +20,26 @@ func _process(_delta):
 		dirty = true
 	else:
 		var index = 0
+		var stack : Array[Dictionary] = [{"id": 0, "visible": true, "expanded": true}]
 		for item in layer_container.get_children():
-			var indent = document.calc_layer_depth(document.layers[index])
-			if item.layer != document.layers[index] or item.indent != indent:
+			if item.layer != document.layers[index]:
 				dirty = true
 				break
+
+			if index > 0 and item.layer.parent_id == document.layers[index-1].id:
+				var prev_layer : Layer = document.layers[index-1]
+				stack.push_back({"id": prev_layer.id, "visible": stack.back().visible and prev_layer.visible, "expanded": stack.back().expanded and prev_layer.expanded})
+			while item.layer.parent_id != stack.back().id:
+				stack.pop_back()
+
+			var indent := len(stack)-1
+			if indent != item.indent:
+				dirty = true
+				break
+
+			item.visible = stack.back().expanded
+			item.parent_visible = stack.back().visible
+
 			index += 1
 
 	if dirty:
