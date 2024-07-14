@@ -11,12 +11,15 @@ var parent_visible : bool
 @onready var _preview := %Preview as TextureRect
 @onready var _folder_icon := %FolderIcon as TextureRect
 @onready var _folder_expand_button := %FolderExpandButton as ExpandButton
+@onready var _effects_icon := %EffectsIcon as TextureRect
+@onready var _effects_expand_button := %EffectsExpandButton as ExpandButton
 #var _displayed_image : Image
 
 func _ready():
 	_visibility_button.pressed.connect(_on_visible_clicked)
 	_name_label.commit.connect(_on_name_comitted)
 	_folder_expand_button.pressed.connect(_on_folder_expand_clicked)
+	_effects_expand_button.pressed.connect(_on_effects_expand_clicked)
 
 	_refresh()
 
@@ -49,7 +52,7 @@ func _process(_delta):
 		%HeaderPanel.theme_type_variation = "LayerHeaderPanel"
 	_name_label.text = layer.name
 	_visibility_button.button_pressed = layer.visible
-	_visibility_button.modulate.a = 1 if parent_visible else 0.5
+	_visibility_button.modulate.a = 1.0 if parent_visible else 0.5
 
 	#if _displayed_image != layer.output:
 	#	_displayed_image = layer.output
@@ -58,9 +61,13 @@ func _process(_delta):
 	#	else:
 	#		%Preview.texture = null
 
-	if _effect_list:
-		_effect_list.document = document
-		_effect_list.layer = layer
+	var has_effects := not layer.effects.is_empty()
+	_effects_icon.visible = has_effects
+	_effects_expand_button.visible = has_effects
+	_effects_expand_button.button_pressed = layer.show_effects
+	_effect_list.visible = layer.show_effects
+	_effect_list.document = document
+	_effect_list.layer = layer
 
 	if layer is GroupLayer:
 		_folder_expand_button.button_pressed = layer.expanded
@@ -79,3 +86,9 @@ func _on_folder_expand_clicked():
 		if document.is_layer_descendent_of_other(selected_layer, layer):
 			document.selected_layer_id = layer.id
 			document.selected_effect_id = 0
+
+func _on_effects_expand_clicked():
+	layer.show_effects = !layer.show_effects
+
+	if not layer.show_effects and document.selected_layer_id == layer.id:
+		document.selected_effect_id = 0

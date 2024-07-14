@@ -6,6 +6,7 @@ class_name Layer extends KnixelResource
 @export var opacity : float = 1
 @export var visible : bool = true
 @export var blend_mode := ImageProcessor.BlendMode.Normal
+@export var show_effects : bool = true
 @export var effects : Array[Effect] = []
 
 class RenderOutput extends RefCounted:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://ejonsuwbsvs6"]
+[gd_scene load_steps=8 format=3 uid="uid://ejonsuwbsvs6"]
 
 [ext_resource type="Script" path="res://src/ui/layer_item.gd" id="1_0mhma"]
 [ext_resource type="PackedScene" uid="uid://c8xgt3lecphj0" path="res://src/ui/editable_label.tscn" id="2_e4h70"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://b73as78ofg6vx" path="res://src/ui/effect_list.tscn" id="2_nlvp6"]
 [ext_resource type="PackedScene" uid="uid://bited2yow3vq0" path="res://src/ui/expand_button.tscn" id="2_snp8r"]
 [ext_resource type="Texture2D" uid="uid://bufcoik7yk6gd" path="res://icons/expand_open.svg" id="3_ug6wq"]
+[ext_resource type="Texture2D" uid="uid://bvyvgoyroq8d5" path="res://icons/new_effect_layer.svg" id="6_4ggi2"]
 
 [node name="LayerItem" type="PanelContainer"]
 anchors_preset = 10
@@ -75,6 +76,18 @@ expand_mode = 1
 [node name="NameLabel" parent="VBoxContainer/HeaderPanel/HBoxContainer" instance=ExtResource("2_e4h70")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="EffectsExpandButton" parent="VBoxContainer/HeaderPanel/HBoxContainer" instance=ExtResource("2_snp8r")]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+icon = ExtResource("3_ug6wq")
+
+[node name="EffectsIcon" type="TextureRect" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+texture = ExtResource("6_4ggi2")
+expand_mode = 2
 
 [node name="Padding2" type="Control" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
 layout_mode = 2

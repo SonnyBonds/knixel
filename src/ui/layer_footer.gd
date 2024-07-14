@@ -106,9 +106,11 @@ func _on_effect_menu_pressed(id : int) -> void:
 		var effect := BlurEffect.new()
 		effect.name = "Blur"
 		layer.effects.push_back(effect)
+		layer.show_effects = true
 		main.active_canvas.document.selected_effect_id = effect.id
 	elif id == 1:
 		var effect := DropShadowEffect.new()
 		effect.name = "Drop Shadow"
 		layer.effects.push_back(effect)
+		layer.show_effects = true
 		main.active_canvas.document.selected_effect_id = effect.id
