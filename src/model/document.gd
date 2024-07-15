@@ -382,8 +382,8 @@ func _render_layers(framebuffer_pool : ImageProcessor.FramebufferPool, layer_lis
 				layer_output.texture = new_output.texture
 				layer_output.offset += new_output.offset
 
-		# If it's the first layer with no blending, we're done and this is the outpu
-		if not last_output and layer.blend_mode == ImageProcessor.BlendMode.Normal:
+		# If it's the first layer with no blending, we're done and this is the output
+		if not last_output and layer.opacity == 1 and layer.blend_mode == ImageProcessor.BlendMode.Normal:
 			last_output = layer_output
 		else:
 			# If it's the first layer and it has blending, we blend on top of
