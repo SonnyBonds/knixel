@@ -90,6 +90,7 @@ texture = ExtResource("6_4ggi2")
 expand_mode = 2
 
 [node name="Padding2" type="Control" parent="VBoxContainer/HeaderPanel/HBoxContainer"]
+custom_minimum_size = Vector2(2, 0)
 layout_mode = 2
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]

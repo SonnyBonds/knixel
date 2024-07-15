@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=59 format=3 uid="uid://cw6hjrmx8t6v5"]
+[gd_resource type="Theme" load_steps=63 format=3 uid="uid://cw6hjrmx8t6v5"]
 
 [ext_resource type="Texture2D" uid="uid://c3y06m16epu8m" path="res://icons/updown.svg" id="1_6lfhe"]
 [ext_resource type="Texture2D" uid="uid://v1slcb1iji3l" path="res://icons/checker.svg" id="1_f25g2"]
@@ -358,6 +358,32 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p5h3h"]
+bg_color = Color(0.25, 0.25, 0.25, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_33iet"]
+bg_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qoftv"]
+bg_color = Color(0.5, 0.5, 0.5, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1fkno"]
+content_margin_left = 3.0
+content_margin_right = 3.0
+bg_color = Color(0.15, 0.15, 0.15, 1)
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ddfxi"]
 texture = ExtResource("2_ns6xt")
 
@@ -480,6 +506,10 @@ ToolButton/styles/disabled = SubResource("StyleBoxEmpty_ult6r")
 ToolButton/styles/hover = SubResource("StyleBoxFlat_umsuf")
 ToolButton/styles/normal = SubResource("StyleBoxEmpty_i1bxa")
 ToolButton/styles/pressed = SubResource("StyleBoxFlat_je6js")
+VScrollBar/styles/grabber = SubResource("StyleBoxFlat_p5h3h")
+VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_33iet")
+VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_qoftv")
+VScrollBar/styles/scroll = SubResource("StyleBoxFlat_1fkno")
 VisibilityButton/base_type = &"Button"
 VisibilityButton/styles/disabled = SubResource("StyleBoxTexture_ddfxi")
 VisibilityButton/styles/disabled_mirrored = SubResource("StyleBoxTexture_ddfxi")
