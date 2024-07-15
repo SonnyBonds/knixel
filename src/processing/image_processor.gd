@@ -139,9 +139,9 @@ static func _create_erase_mask_pipeline(rd : RenderingDevice) -> ProcessingPipel
 	blend_attachment.color_blend_op = RenderingDevice.BLEND_OP_ADD
 	blend_attachment.src_color_blend_factor = RenderingDevice.BLEND_FACTOR_ZERO
 	blend_attachment.dst_color_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
-	blend_attachment.alpha_blend_op = RenderingDevice.BLEND_OP_REVERSE_SUBTRACT
-	blend_attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
-	blend_attachment.dst_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
+	blend_attachment.alpha_blend_op = RenderingDevice.BLEND_OP_ADD
+	blend_attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ZERO
+	blend_attachment.dst_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA
 
 	pipeline.color_blend_state.attachments = [blend_attachment]
 	
