@@ -4,6 +4,7 @@ enum BlendMode { PassThrough, Normal, Add, Darken, Difference, Erase, Lighten, M
 
 static var render_device := RenderingServer.create_local_rendering_device()
 static var texture_view := RDTextureView.new()
+static var dummy_texture : RID
 
 class FramebufferPool extends RefCounted:
 	var available_framebuffers : Array[Dictionary]
@@ -251,6 +252,8 @@ static var _rect_index_buffer : RID
 static var _rect_index_array : RID
 
 static func _static_init():
+	dummy_texture = create_texture(Vector2i(32, 32))
+	
 	_blend_pipelines[BlendMode.Add] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/add.glsl"))
 	_blend_pipelines[BlendMode.Darken] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/darken.glsl"))
 	_blend_pipelines[BlendMode.Difference] = _create_blend_pipeline(render_device, preload("res://src/shaders/blend_modes/difference.glsl"))
@@ -280,10 +283,11 @@ static func _static_init():
 
 static func shutdown():
 	# TODO: Free everything properly
+	render_device.free_rid(dummy_texture)
 	render_device.free_rid(_rect_index_buffer)
 	render_device.free_rid(_rect_index_array)
 
-static func create_texture(size : Vector2i, usage_bits : int = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT) -> RID:
+static func create_texture(size : Vector2i, usage_bits : int = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT) -> RID:
 	var format := RDTextureFormat.new()
 	format.width = size.x
 	format.height = size.y
@@ -292,7 +296,7 @@ static func create_texture(size : Vector2i, usage_bits : int = RenderingDevice.T
 
 	return render_device.texture_create(format, texture_view, [])
 
-static func create_texture_from_image(image : Image, usage_bits : int = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT) -> RID:
+static func create_texture_from_image(image : Image, usage_bits : int = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT) -> RID:
 	var format := RDTextureFormat.new()
 	format.width = image.get_width()
 	format.height = image.get_height()

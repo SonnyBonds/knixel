@@ -316,7 +316,7 @@ func save_to_file() -> void:
 	var dict := save(writer)
 	writer.write_blob("document.json", JSON.stringify(dict).to_utf8_buffer())
 
-func _render_layers(framebuffer_pool : ImageProcessor.FramebufferPool, layer_list : Array) -> Layer.RenderOutput:
+func _render_compiled_layer_list(framebuffer_pool : ImageProcessor.FramebufferPool, layer_list : Array) -> Layer.RenderOutput:
 	var num_layers := len(layer_list)
 	var last_output : Layer.RenderOutput = null
 
@@ -334,36 +334,49 @@ func _render_layers(framebuffer_pool : ImageProcessor.FramebufferPool, layer_lis
 		if layer is GroupLayer:
 			if entry.op == &"push":
 				# If this is the beginning of a pass-through group we store the current compositing state
-				var pushed_output := Layer.RenderOutput.new()
-				pushed_output.texture = last_output.texture
-				pushed_output.offset = last_output.offset
-				pushed_groups[layer.id] = pushed_output
-				held_outputs.push_back(last_output.texture)
+				# (if there is one)
+				if last_output:
+					var pushed_output := Layer.RenderOutput.new()
+					pushed_output.texture = last_output.texture
+					pushed_output.offset = last_output.offset
+					pushed_groups[layer.id] = pushed_output
+					held_outputs.push_back(pushed_output.texture)
 				continue
 			elif entry.op == &"pop":
-				# ...and if it's the end of a pass-through group, we mix the original
-				# state back based on the opacity to partially "undo" whatever the group has done.
-				var held_output = pushed_groups[layer.id]
-				var last_output_size := ImageProcessor.get_texture_size(last_output.texture)
-				var framebuffer = framebuffer_pool.get_framebuffer(last_output_size)
-				ImageProcessor.blend_async(framebuffer, 
-					last_output.texture,
-					Vector2i.ZERO,
-					held_output.texture,
-					held_output.offset - last_output.offset,
-					Color(1, 1, 1, layer.opacity), 
-					Rect2i(Vector2i.ZERO, framebuffer.size),
-					ImageProcessor.BlendMode.InternalCrossFade)
+				var held_output = pushed_groups.get(layer.id, null)
 
-				pushed_groups.erase(layer.id)
-				# With multiple nested pass-through groups the same output may be held
-				# multiple times, we just erase one like a refcount
-				held_outputs.erase(held_output.texture)
-				# and release it if it's fully gone
-				if held_outputs.find(held_output.texture) == -1:
-					framebuffer_pool.release_framebuffer_by_texture(held_output.texture)
-				framebuffer_pool.release_framebuffer_by_texture(last_output.texture)
-				last_output.texture = framebuffer.texture
+				# If it's the end of a pass-through group and the group actually did anything, 
+				# we mix the original state back based on the opacity to partially "undo" 
+				# whatever the group has done.
+				if last_output != held_output:
+					var held_texture = held_output.texture if held_output else ImageProcessor.dummy_texture
+					var held_offset = held_output.offset if held_output else Vector2i.ZERO
+					var last_output_size := ImageProcessor.get_texture_size(last_output.texture)
+					var framebuffer = framebuffer_pool.get_framebuffer(last_output_size)
+					ImageProcessor.blend_async(framebuffer, 
+						last_output.texture,
+						Vector2i.ZERO,
+						held_texture,
+						held_offset - last_output.offset,
+						Color(1, 1, 1, layer.opacity), 
+						Rect2i(Vector2i.ZERO, framebuffer.size),
+						# If we're blending against a dummy we don't want the crossfade because it'll
+						# blend in black
+						ImageProcessor.BlendMode.InternalCrossFade if held_output else ImageProcessor.BlendMode.Normal)
+
+					framebuffer_pool.release_framebuffer_by_texture(last_output.texture)
+					last_output.texture = framebuffer.texture
+
+					pushed_groups.erase(layer.id)
+
+				if held_output:
+					# With multiple nested pass-through groups the same output may be held
+					# multiple times, we just erase one like a refcount
+					held_outputs.erase(held_output.texture)
+					# and release it if it's fully gone
+					if held_outputs.find(held_output.texture) == -1:
+						framebuffer_pool.release_framebuffer_by_texture(held_output.texture)
+
 				continue
 			else:
 				# If it's a "normal" group, its layers have already been composited and
@@ -389,9 +402,8 @@ func _render_layers(framebuffer_pool : ImageProcessor.FramebufferPool, layer_lis
 			# If it's the first layer and it has blending, we blend on top of
 			# a dummy texture just to keep things simple even if it's not optimal.
 			if not last_output:
-				var temp_framebuffer := framebuffer_pool.get_framebuffer(Vector2i(32, 32))
 				last_output = Layer.RenderOutput.new()
-				last_output.texture = temp_framebuffer.texture
+				last_output.texture = ImageProcessor.dummy_texture
 
 			var rect := Rect2i(Vector2i.ZERO, ImageProcessor.get_texture_size(last_output.texture))
 			rect = rect.merge(Rect2i(layer_output.offset - last_output.offset, ImageProcessor.get_texture_size(layer_output.texture)))
@@ -418,21 +430,11 @@ func _render_layers(framebuffer_pool : ImageProcessor.FramebufferPool, layer_lis
 
 	return last_output
 
-func _render() -> void:
-	_rendered_layers.clear()
-
-	var framebuffer_pool := ImageProcessor.FramebufferPool.new()
-
-	var canvas_framebuffer = framebuffer_pool.get_framebuffer(size)
-	canvas_framebuffer["layer_id"] = 0
-
-	# Keep a stack of groups. First one is not an actual group, but it makes it simpler
+func _render_layers(framebuffer_pool : ImageProcessor.FramebufferPool, layers_to_render : Array[Layer]) -> Layer.RenderOutput:
+	# Keep a stack of groups. First one may not be an actual group, but it makes it simpler
 	# to always have an entry in the stack.
-	var layer_stack := [{"group_id": 0, "group_layer": null, "layers": [], "visible": true}]
-	for layer in layers:
-		# Keep a copy of last rendered layers to compare to for figuring out if we need to re-render 
-		_rendered_layers.push_back(layer.clone())
-
+	var layer_stack := [{"group_id": layers_to_render.front().parent_id, "group_layer": null, "layers": [], "visible": true}]
+	for layer in layers_to_render:
 		if layer is GroupLayer:
 			# Check if it's a pass through group. Groups with effects can't be pass-through
 			var pass_through := layer.blend_mode == ImageProcessor.BlendMode.PassThrough and layer.effects.is_empty()
@@ -453,7 +455,7 @@ func _render() -> void:
 				# Non-pass through groups get rendered now
 				if layer_stack.back().visible and (group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough or not group_layer.effects.is_empty()):
 					# Render the layers of the current group
-					var output := _render_layers(framebuffer_pool, layer_stack.back().layers)
+					var output := _render_compiled_layer_list(framebuffer_pool, layer_stack.back().layers)
 					# ...and pop it off the stack
 					layer_stack.pop_back()
 					if output:
@@ -477,7 +479,7 @@ func _render() -> void:
 	while not layer_stack.is_empty():
 		var group_layer = layer_stack.back().group_layer
 		if layer_stack.back().visible and (not group_layer or group_layer.blend_mode != ImageProcessor.BlendMode.PassThrough or not group_layer.effects.is_empty()):
-			var output := _render_layers(framebuffer_pool, layer_stack.back().layers)
+			var output := _render_compiled_layer_list(framebuffer_pool, layer_stack.back().layers)
 			layer_stack.pop_back()
 			if layer_stack.is_empty():
 				final_output = output
@@ -489,14 +491,23 @@ func _render() -> void:
 				layer_stack.back().layers.push_back({"layer": group_layer, "op": &"push"})
 			layer_stack.pop_back()
 
+	return final_output
+
+func _render() -> void:
+	_rendered_layers.clear()
+
+	var framebuffer_pool := ImageProcessor.FramebufferPool.new()
+
+	var canvas_framebuffer = framebuffer_pool.get_framebuffer(size)
+	canvas_framebuffer["layer_id"] = 0
+
+	var final_output := _render_layers(framebuffer_pool, layers)
 
 	# Copy the final result to the final texture
 	# TODO: This creates a dummy input texture and blend_async, but it
 	# should really just be a copy
-	var dummy_texture : RID = RID()
 	if final_output:
-		dummy_texture = ImageProcessor.create_texture(Vector2i(16, 16))
-		ImageProcessor.blend_async(canvas_framebuffer, final_output.texture, final_output.offset, dummy_texture, Vector2i.ZERO, Color.WHITE)
+		ImageProcessor.blend_async(canvas_framebuffer, final_output.texture, final_output.offset, ImageProcessor.dummy_texture, Vector2i.ZERO, Color.WHITE)
 		framebuffer_pool.release_framebuffer_by_texture(final_output.texture)
 
 	ImageProcessor.render_device.submit()
@@ -505,7 +516,71 @@ func _render() -> void:
 	var byte_data : PackedByteArray = ImageProcessor.render_device.texture_get_data(canvas_framebuffer.texture, 0)
 	output_image = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBAF, byte_data)
 
-	if dummy_texture:
-		ImageProcessor.render_device.free_rid(dummy_texture)
-
 	framebuffer_pool.release_framebuffer(canvas_framebuffer.framebuffer)
+
+	for layer in layers:
+		# Keep a copy of last rendered layers to compare to for figuring out if we need to re-render 
+		_rendered_layers.push_back(layer.clone())
+
+
+func merge_down(layer_id : int) -> int:
+	var start_index : int = -1
+	for layer_index in len(layers):
+		if layers[layer_index].id == layer_id:
+			start_index = layer_index
+			break
+
+	if start_index == -1:
+		return 0
+
+	var new_name : String
+	var end_index := start_index
+	if layers[start_index] is GroupLayer:
+		new_name = layers[start_index].name
+		end_index = find_group_end(start_index)
+	elif start_index+1 >= len(layers):
+		return layers[start_index].id
+	elif layers[start_index+1] is GroupLayer:
+		new_name = layers[start_index+1].name
+		end_index = find_group_end(start_index+1)
+	else:
+		if layers[start_index+1].parent_id != layers[start_index].parent_id:
+			return layers[start_index].id
+		new_name = layers[start_index+1].name
+		end_index = start_index + 2
+	
+	var layers_to_merge : Array[Layer] = []
+	for index in range(start_index, end_index):
+		layers_to_merge.push_back(layers[index])
+
+	if layers_to_merge.is_empty():
+		assert(false)
+		return layers[start_index].id
+
+	var framebuffer_pool := ImageProcessor.FramebufferPool.new()
+	var merged_output := _render_layers(framebuffer_pool, layers_to_merge)
+
+	if not merged_output or not merged_output.texture:
+		return layers[start_index].id
+	
+	ImageProcessor.render_device.submit()
+	ImageProcessor.render_device.sync()
+
+	var output_size := ImageProcessor.get_texture_size(merged_output.texture)
+	var byte_data : PackedByteArray = ImageProcessor.render_device.texture_get_data(merged_output.texture, 0)
+	var merged_image := Image.create_from_data(output_size.x, output_size.y, false, Image.FORMAT_RGBAF, byte_data)
+
+	var layer := ImageLayer.new()
+	layer.image = merged_image
+	layer.parent_id = layers_to_merge.front().parent_id
+	layer.offset = merged_output.offset
+	layer.name = new_name
+
+	for i in len(layers_to_merge):
+		layers.remove_at(start_index)
+
+	layers.insert(start_index, layer)
+
+	framebuffer_pool.release_framebuffer_by_texture(merged_output.texture)
+	
+	return layer.id
