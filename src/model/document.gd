@@ -596,6 +596,8 @@ func add_new_layer_at_selection() -> int:
 		if layers[new_index] is GroupLayer:
 			layer.parent_id = layers[new_index].id
 			new_index += 1
+		else:
+			layer.parent_id = layers[new_index].parent_id
 	layers.insert(new_index, layer)
 	
 	return layer.id
@@ -610,6 +612,8 @@ func add_new_folder_at_selection() -> int:
 		if layers[new_index] is GroupLayer:
 			layer.parent_id = layers[new_index].id
 			new_index += 1
+		else:
+			layer.parent_id = layers[new_index].parent_id
 	layers.insert(new_index, layer)
 	
 	return layer.id
