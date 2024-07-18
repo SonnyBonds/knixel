@@ -599,3 +599,17 @@ func add_new_layer_at_selection() -> int:
 	layers.insert(new_index, layer)
 	
 	return layer.id
+
+func add_new_folder_at_selection() -> int:
+	var layer := GroupLayer.new()
+	layer.name = get_new_layer_name("Folder")
+	
+	var new_index = 0
+	if selected_layer_id != 0:
+		new_index = find_layer_index(selected_layer_id)
+		if layers[new_index] is GroupLayer:
+			layer.parent_id = layers[new_index].id
+			new_index += 1
+	layers.insert(new_index, layer)
+	
+	return layer.id
