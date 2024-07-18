@@ -617,3 +617,51 @@ func add_new_folder_at_selection() -> int:
 	layers.insert(new_index, layer)
 	
 	return layer.id
+
+func duplicate_selection() -> int:
+	var selected_layer := get_selected_layer()
+	if not selected_layer:
+		return 0
+
+	var new_layers : Array[Layer] = []
+	var new_index = find_layer_index(selected_layer_id)
+	if selected_layer is GroupLayer:
+		var layer := selected_layer.clone()
+		layer.id = Layer._get_next_id()
+		new_layers.push_back(layer)
+
+		var src_stack : Array[int] = []
+		var new_stack : Array[int] = []
+		var src_index = new_index + 1
+		var last_src_id = selected_layer.id
+		var last_new_id = layer.id
+		while src_index < len(layers):
+			if layers[src_index].parent_id == last_src_id:
+				src_stack.push_back(last_src_id)
+				new_stack.push_back(last_new_id)
+			
+			while not src_stack.is_empty() and layers[src_index].parent_id != src_stack.back():
+				src_stack.pop_back()
+				new_stack.pop_back()
+			
+			if src_stack.is_empty():
+				break
+
+			var new_layer := layers[src_index].clone()
+			new_layer.id = Layer._get_next_id()
+			new_layer.parent_id = new_stack.back()
+			new_layers.push_back(new_layer)
+
+			last_src_id = layers[src_index].id
+			last_new_id = new_layer.id
+			src_index += 1
+	else:
+		var layer := selected_layer.clone()
+		layer.id = Layer._get_next_id()
+		new_layers.push_back(layer)
+
+	for layer in new_layers:
+		layers.insert(new_index, layer)
+		new_index += 1
+
+	return new_layers.front().id
