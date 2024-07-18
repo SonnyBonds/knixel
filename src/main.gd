@@ -9,7 +9,7 @@ var _clipboard : Image
 enum { FILE_NEW, FILE_OPEN, FILE_CLOSE, FILE_SAVE, FILE_SAVE_AS, FILE_EXPORT, FILE_EXPORT_AGAIN, FILE_QUIT,
 	   EDIT_UNDO, EDIT_REDO, EDIT_CUT, EDIT_COPY, EDIT_COPY_MERGED, EDIT_PASTE, EDIT_SELECT_ALL, EDIT_FILL_FOREGROUND, EDIT_FILL_BACKGROUND, EDIT_CLEAR_SELECTION, EDIT_DELETE,
 	   IMAGE_RESIZE_IMAGE, IMAGE_RESIZE_CANVAS,
-	   LAYER_MERGE_DOWN }
+	   LAYER_NEW, LAYER_MERGE_DOWN }
 
 @onready var canvas_container := %CanvasContainer as TabContainer
 @onready var _swap_colors_button := %SwapColorsButton as Button
@@ -70,6 +70,7 @@ func _ready():
 	%ImageMenu.get_popup().add_item("Resize Canvas...", IMAGE_RESIZE_CANVAS, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_C)
 
 	%LayerMenu.get_popup().id_pressed.connect(_on_menu_pressed)
+	%LayerMenu.get_popup().add_item("New", LAYER_NEW, KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_N)
 	%LayerMenu.get_popup().add_item("Merge Down", LAYER_MERGE_DOWN, KEY_MASK_CTRL | KEY_E)
 
 	$FileOpenDialog.file_selected.connect(_on_file_open_selected)
@@ -259,6 +260,9 @@ func _on_menu_pressed(id : int) -> void:
 			open_resize_image_dialog()
 		IMAGE_RESIZE_CANVAS:
 			open_resize_canvas_dialog()
+		LAYER_NEW:
+			active_canvas.document.selected_layer_id = active_canvas.document.add_new_layer_at_selection()
+			active_canvas.document.selected_effect_id = 0
 		LAYER_MERGE_DOWN:
 			if active_canvas.document.selected_layer_id != 0:
 				active_canvas.document.selected_layer_id = active_canvas.document.merge_down(active_canvas.document.selected_layer_id)

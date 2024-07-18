@@ -584,3 +584,18 @@ func merge_down(layer_id : int) -> int:
 	framebuffer_pool.release_framebuffer_by_texture(merged_output.texture)
 	
 	return layer.id
+
+func add_new_layer_at_selection() -> int:
+	var layer := ImageLayer.new()
+	layer.image = Image.create(8, 8, false, Image.FORMAT_RGBAF)
+	layer.name = get_new_layer_name()
+	
+	var new_index = 0
+	if selected_layer_id != 0:
+		new_index = find_layer_index(selected_layer_id)
+		if layers[new_index] is GroupLayer:
+			layer.parent_id = layers[new_index].id
+			new_index += 1
+	layers.insert(new_index, layer)
+	
+	return layer.id

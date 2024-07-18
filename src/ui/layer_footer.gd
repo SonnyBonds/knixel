@@ -27,14 +27,8 @@ func _on_new_layer_pressed() -> void:
 	if not main.active_canvas:
 		return
 
-	var document = main.active_canvas.document
-	var layer := ImageLayer.new()
-	layer.image = Image.create(8, 8, false, Image.FORMAT_RGBAF)
-	layer.name = document.get_new_layer_name()
-	document.layers.push_front(layer)
-	document.selected_layer_id = layer.id
-	document.selected_effect_id = 0
-	document.selection = null
+	main.active_canvas.document.selected_layer_id = main.active_canvas.document.add_new_layer_at_selection()
+	main.active_canvas.document.selected_effect_id = 0
 
 func _on_new_folder_pressed() -> void:
 	if not main.active_canvas:
