@@ -70,7 +70,7 @@ func _ready():
 	%ImageMenu.get_popup().add_item("Resize Canvas...", IMAGE_RESIZE_CANVAS, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_C)
 
 	%LayerMenu.get_popup().id_pressed.connect(_on_menu_pressed)
-	%ImageMenu.get_popup().add_item("Merge Down", LAYER_MERGE_DOWN, KEY_MASK_CTRL | KEY_E)
+	%LayerMenu.get_popup().add_item("Merge Down", LAYER_MERGE_DOWN, KEY_MASK_CTRL | KEY_E)
 
 	$FileOpenDialog.file_selected.connect(_on_file_open_selected)
 	$FileOpenDialog.filters = [
