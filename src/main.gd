@@ -9,6 +9,7 @@ var _clipboard : Image
 enum { FILE_NEW, FILE_OPEN, FILE_CLOSE, FILE_SAVE, FILE_SAVE_AS, FILE_EXPORT, FILE_EXPORT_AGAIN, FILE_QUIT,
 	   EDIT_UNDO, EDIT_REDO, EDIT_CUT, EDIT_COPY, EDIT_COPY_MERGED, EDIT_PASTE, EDIT_SELECT_ALL, EDIT_FILL_FOREGROUND, EDIT_FILL_BACKGROUND, EDIT_CLEAR_SELECTION, EDIT_DELETE,
 	   IMAGE_RESIZE_IMAGE, IMAGE_RESIZE_CANVAS,
+	   VIEW_RESET_VIEW,
 	   LAYER_NEW, LAYER_NEW_FOLDER, LAYER_DUPLICATE, LAYER_MERGE_DOWN }
 
 @onready var canvas_container := %CanvasContainer as TabContainer
@@ -35,45 +36,69 @@ func _ready():
 	%ForegroundColorBox.commit.connect(_on_foreground_commit)
 	%BackgroundColorBox.commit.connect(_on_background_commit)	
 	
-	%FileMenu.get_popup().id_pressed.connect(_on_menu_pressed)
-	%FileMenu.get_popup().add_item("New...", FILE_NEW, KEY_MASK_CTRL | KEY_N)
-	%FileMenu.get_popup().add_item("Open...", FILE_OPEN, KEY_MASK_CTRL | KEY_O)
-	%FileMenu.get_popup().add_item("Close", FILE_CLOSE, KEY_MASK_CTRL | KEY_W)
-	%FileMenu.get_popup().add_separator()
-	%FileMenu.get_popup().add_item("Save", FILE_SAVE, KEY_MASK_CTRL | KEY_S)
-	%FileMenu.get_popup().add_item("Save As...", FILE_SAVE_AS, KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_S)
-	%FileMenu.get_popup().add_separator()
-	%FileMenu.get_popup().add_item("Export...", FILE_EXPORT, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_S)
-	%FileMenu.get_popup().add_item("Export Again", FILE_EXPORT_AGAIN, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_S)
-	%FileMenu.get_popup().add_separator()
-	%FileMenu.get_popup().add_item("Quit", FILE_QUIT, KEY_MASK_CTRL | KEY_Q)
+	var menu : MenuButton
+	menu = MenuButton.new()
+	menu.switch_on_hover = true
+	menu.text = "File"
+	%MenuBar.add_child(menu)
+	menu.get_popup().id_pressed.connect(_on_menu_pressed)
+	menu.get_popup().add_item("New...", FILE_NEW, KEY_MASK_CTRL | KEY_N)
+	menu.get_popup().add_item("Open...", FILE_OPEN, KEY_MASK_CTRL | KEY_O)
+	menu.get_popup().add_item("Close", FILE_CLOSE, KEY_MASK_CTRL | KEY_W)
+	menu.get_popup().add_separator()
+	menu.get_popup().add_item("Save", FILE_SAVE, KEY_MASK_CTRL | KEY_S)
+	menu.get_popup().add_item("Save As...", FILE_SAVE_AS, KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_S)
+	menu.get_popup().add_separator()
+	menu.get_popup().add_item("Export...", FILE_EXPORT, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_S)
+	menu.get_popup().add_item("Export Again", FILE_EXPORT_AGAIN, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_S)
+	menu.get_popup().add_separator()
+	menu.get_popup().add_item("Quit", FILE_QUIT, KEY_MASK_CTRL | KEY_Q)
 
-	%EditMenu.get_popup().id_pressed.connect(_on_menu_pressed)
-	%EditMenu.get_popup().add_item("Undo", EDIT_UNDO, KEY_MASK_CTRL | KEY_Z)
-	%EditMenu.get_popup().add_item("Redo", EDIT_REDO, KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_Z)
-	%EditMenu.get_popup().add_separator()
-	%EditMenu.get_popup().add_item("Cut", EDIT_CUT, KEY_MASK_CTRL | KEY_X)
-	%EditMenu.get_popup().add_item("Copy", EDIT_COPY, KEY_MASK_CTRL | KEY_C)
-	%EditMenu.get_popup().add_item("Copy Merged", EDIT_COPY_MERGED, KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_C)
-	%EditMenu.get_popup().add_item("Paste", EDIT_PASTE, KEY_MASK_CTRL | KEY_V)
-	%EditMenu.get_popup().add_separator()
-	%EditMenu.get_popup().add_item("Select All", EDIT_SELECT_ALL, KEY_MASK_CTRL | KEY_A)
-	%EditMenu.get_popup().add_item("Clear Selection", EDIT_CLEAR_SELECTION, KEY_MASK_CTRL | KEY_D)
-	%EditMenu.get_popup().add_separator()
-	%EditMenu.get_popup().add_item("Fill With Foreground", EDIT_FILL_FOREGROUND, KEY_MASK_ALT | KEY_DELETE)
-	%EditMenu.get_popup().add_item("Fill With Background", EDIT_FILL_BACKGROUND, KEY_MASK_CTRL | KEY_DELETE)
-	%EditMenu.get_popup().add_separator()
-	%EditMenu.get_popup().add_item("Delete", EDIT_DELETE, KEY_DELETE)
+	menu = MenuButton.new()
+	menu.switch_on_hover = true
+	menu.text = "Edit"
+	%MenuBar.add_child(menu)
+	menu.get_popup().id_pressed.connect(_on_menu_pressed)
+	menu.get_popup().add_item("Undo", EDIT_UNDO, KEY_MASK_CTRL | KEY_Z)
+	menu.get_popup().add_item("Redo", EDIT_REDO, KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_Z)
+	menu.get_popup().add_separator()
+	menu.get_popup().add_item("Cut", EDIT_CUT, KEY_MASK_CTRL | KEY_X)
+	menu.get_popup().add_item("Copy", EDIT_COPY, KEY_MASK_CTRL | KEY_C)
+	menu.get_popup().add_item("Copy Merged", EDIT_COPY_MERGED, KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_C)
+	menu.get_popup().add_item("Paste", EDIT_PASTE, KEY_MASK_CTRL | KEY_V)
+	menu.get_popup().add_separator()
+	menu.get_popup().add_item("Select All", EDIT_SELECT_ALL, KEY_MASK_CTRL | KEY_A)
+	menu.get_popup().add_item("Clear Selection", EDIT_CLEAR_SELECTION, KEY_MASK_CTRL | KEY_D)
+	menu.get_popup().add_separator()
+	menu.get_popup().add_item("Fill With Foreground", EDIT_FILL_FOREGROUND, KEY_MASK_ALT | KEY_DELETE)
+	menu.get_popup().add_item("Fill With Background", EDIT_FILL_BACKGROUND, KEY_MASK_CTRL | KEY_DELETE)
+	menu.get_popup().add_separator()
+	menu.get_popup().add_item("Delete", EDIT_DELETE, KEY_DELETE)
 
-	%ImageMenu.get_popup().id_pressed.connect(_on_menu_pressed)
-	%ImageMenu.get_popup().add_item("Resize Image...", IMAGE_RESIZE_IMAGE, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_I)
-	%ImageMenu.get_popup().add_item("Resize Canvas...", IMAGE_RESIZE_CANVAS, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_C)
+	menu = MenuButton.new()
+	menu.switch_on_hover = true
+	menu.text = "View"
+	%MenuBar.add_child(menu)
+	menu.get_popup().id_pressed.connect(_on_menu_pressed)
+	menu.get_popup().add_item("Reset View", VIEW_RESET_VIEW, KEY_MASK_CTRL | KEY_1)
 
-	%LayerMenu.get_popup().id_pressed.connect(_on_menu_pressed)
-	%LayerMenu.get_popup().add_item("New Layer", LAYER_NEW, KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_N)
-	%LayerMenu.get_popup().add_item("New Folder", LAYER_NEW_FOLDER)
-	%LayerMenu.get_popup().add_item("Duplicate", LAYER_DUPLICATE, KEY_MASK_CTRL | KEY_J)
-	%LayerMenu.get_popup().add_item("Merge Down", LAYER_MERGE_DOWN, KEY_MASK_CTRL | KEY_E)
+	menu = MenuButton.new()
+	menu.switch_on_hover = true
+	menu.text = "Image"
+	%MenuBar.add_child(menu)
+	menu.get_popup().id_pressed.connect(_on_menu_pressed)
+	menu.get_popup().add_item("Resize Image...", IMAGE_RESIZE_IMAGE, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_I)
+	menu.get_popup().add_item("Resize Canvas...", IMAGE_RESIZE_CANVAS, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_C)
+
+	menu = MenuButton.new()
+	menu.switch_on_hover = true
+	menu.text = "Layer"
+	%MenuBar.add_child(menu)
+	menu.get_popup().id_pressed.connect(_on_menu_pressed)
+	menu.get_popup().add_item("New Layer", LAYER_NEW, KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_N)
+	menu.get_popup().add_item("New Folder", LAYER_NEW_FOLDER)
+	menu.get_popup().add_item("Duplicate", LAYER_DUPLICATE, KEY_MASK_CTRL | KEY_J)
+	menu.get_popup().add_item("Merge Down", LAYER_MERGE_DOWN, KEY_MASK_CTRL | KEY_E)
 
 	$FileOpenDialog.file_selected.connect(_on_file_open_selected)
 	$FileOpenDialog.filters = [
@@ -262,6 +287,9 @@ func _on_menu_pressed(id : int) -> void:
 			open_resize_image_dialog()
 		IMAGE_RESIZE_CANVAS:
 			open_resize_canvas_dialog()
+		VIEW_RESET_VIEW:
+			if active_canvas:
+				active_canvas.reset_view()
 		LAYER_NEW:
 			active_canvas.document.selected_layer_id = active_canvas.document.add_new_layer_at_selection()
 			active_canvas.document.selected_effect_id = 0
