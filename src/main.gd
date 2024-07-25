@@ -9,12 +9,14 @@ var _clipboard : Image
 enum { FILE_NEW, FILE_OPEN, FILE_CLOSE, FILE_SAVE, FILE_SAVE_AS, FILE_EXPORT, FILE_EXPORT_AGAIN, FILE_QUIT,
 	   EDIT_UNDO, EDIT_REDO, EDIT_CUT, EDIT_COPY, EDIT_COPY_MERGED, EDIT_PASTE, EDIT_SELECT_ALL, EDIT_FILL_FOREGROUND, EDIT_FILL_BACKGROUND, EDIT_CLEAR_SELECTION, EDIT_DELETE,
 	   IMAGE_RESIZE_IMAGE, IMAGE_RESIZE_CANVAS,
-	   VIEW_RESET_VIEW,
+	   VIEW_RESET_VIEW, VIEW_VIEW_TILED,
 	   LAYER_NEW, LAYER_NEW_FOLDER, LAYER_DUPLICATE, LAYER_MERGE_DOWN }
 
 @onready var canvas_container := %CanvasContainer as TabContainer
 @onready var _swap_colors_button := %SwapColorsButton as Button
 @onready var _reset_colors_button := %ResetColorsButton as Button
+
+var _view_menu : MenuButton
 
 func _init():
 	KnixelResource.initialize()
@@ -81,6 +83,8 @@ func _ready():
 	%MenuBar.add_child(menu)
 	menu.get_popup().id_pressed.connect(_on_menu_pressed)
 	menu.get_popup().add_item("Reset View", VIEW_RESET_VIEW, KEY_MASK_CTRL | KEY_1)
+	menu.get_popup().add_item("View Tiled", VIEW_VIEW_TILED, KEY_MASK_ALT | KEY_T)
+	_view_menu = menu
 
 	menu = MenuButton.new()
 	menu.switch_on_hover = true
@@ -290,6 +294,9 @@ func _on_menu_pressed(id : int) -> void:
 		VIEW_RESET_VIEW:
 			if active_canvas:
 				active_canvas.reset_view()
+		VIEW_VIEW_TILED:
+			if active_canvas:
+				active_canvas.document.view_tiled = !active_canvas.document.view_tiled
 		LAYER_NEW:
 			active_canvas.document.selected_layer_id = active_canvas.document.add_new_layer_at_selection()
 			active_canvas.document.selected_effect_id = 0
@@ -371,12 +378,25 @@ func _process(_delta):
 
 		for child in %ToolBar.get_children():
 			child.set_pressed_no_signal(active_canvas.tool and child is ToolButton and child.tool_type == active_canvas.tool.get_script())
+
+		var tiled_item = _view_menu.get_popup().get_item_index(VIEW_VIEW_TILED)
+		# TODO: Not using checkbox items because of DPI issues. Need to figure that out.
+		_view_menu.get_popup().set_item_icon_max_width(tiled_item, 16)
+		if active_canvas.document.view_tiled:
+			_view_menu.get_popup().set_item_icon(tiled_item, preload("res://icons/menu_checkbox_checked.svg"))
+		else:
+			_view_menu.get_popup().set_item_icon(tiled_item, preload("res://icons/menu_checkbox.svg"))
 	else:
 		_swap_colors_button.disabled = true
 		_reset_colors_button.disabled = true
 
 		for child in %ToolBar.get_children():
 			child.disabled = true
+		
+		var tiled_item = _view_menu.get_popup().get_item_index(VIEW_VIEW_TILED)
+		# TODO: Not using checkbox items because of DPI issues. Need to figure that out.
+		_view_menu.get_popup().set_item_icon_max_width(tiled_item, 16)
+		_view_menu.get_popup().set_item_icon(tiled_item, preload("res://icons/menu_checkbox.svg"))	
 
 func load_from_file(path : String) -> void:
 	if not FileAccess.file_exists(path):

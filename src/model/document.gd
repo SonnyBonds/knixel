@@ -5,6 +5,8 @@ class_name Document extends KnixelResource
 @export var selected_layer_id : int = 0
 @export var selected_effect_id : int = 0
 
+var view_tiled := false
+
 var path : String
 var last_export_path : String
 var output_image : Image
