@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cj5kmqvsdgxcm"
+path="res://.godot/imported/blend_mode_fragment.glsl-e736b936c96703ab1d62abcf843f269b.res"
+
+[deps]
+
+source_file="res://src/shaders/blend_modes/blend_mode_fragment.glsl"
+dest_files=["res://.godot/imported/blend_mode_fragment.glsl-e736b936c96703ab1d62abcf843f269b.res"]
+
+[params]
+

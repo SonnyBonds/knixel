@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cvmw26uapdxfq"
+path="res://.godot/imported/blend_mode_vertex.glsl-1235955b6c91367740a256313b57dd6b.res"
+
+[deps]
+
+source_file="res://src/shaders/blend_modes/blend_mode_vertex.glsl"
+dest_files=["res://.godot/imported/blend_mode_vertex.glsl-1235955b6c91367740a256313b57dd6b.res"]
+
+[params]
+

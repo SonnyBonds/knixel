@@ -1,41 +1,17 @@
 #[vertex]
 #version 420 
 
-layout( push_constant ) uniform constants
-{
-    vec2 src_offset;
-    ivec2 dst_offset;
-    vec4 rect;
-    vec4 color;
-} inputs;
-
-void main()
-{
-    vec2 coord[4] = vec2[](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));
-    gl_Position = vec4(mix(inputs.rect.xy, inputs.rect.zw, coord[gl_VertexIndex])*2.0-1.0, 0.0, 1.0); 
-}
+#include "res://src/shaders/blend_modes/blend_mode_vertex.glsl"
 
 #[fragment]
 #version 420
 
-layout(set = 0, binding = 0) uniform sampler2D src_tex;
-layout(set = 0, binding = 1) uniform sampler2D dst_tex;
+#include "res://src/shaders/blend_modes/blend_mode_fragment.glsl"
 
-layout(location = 0) out vec4 output_color; 
-
-layout( push_constant ) uniform constants
+vec4 blend(vec4 src, vec4 dst)
 {
-    ivec2 src_offset;
-    ivec2 dst_offset;
-    vec4 rect;
-    vec4 color;
-} inputs;
-
-void main()
-{ 
-    vec4 src = texelFetch(src_tex, ivec2(gl_FragCoord) - inputs.src_offset, 0) * inputs.color;
-    vec4 dst = texelFetch(dst_tex, ivec2(gl_FragCoord) - inputs.dst_offset, 0);
-
-    output_color.rgb = dst.rgb;
-    output_color.a = max(dst.a - src.a, 0.0);
+    vec4 blended;
+    blended.rgb = dst.rgb;
+    blended.a = max(dst.a - src.a, 0.0);
+    return blended;
 }
