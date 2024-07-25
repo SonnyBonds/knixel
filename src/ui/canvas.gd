@@ -74,6 +74,10 @@ func _process(_delta):
 
 	var image_control := %Image as Control
 
+	var view_bounds_min := Vector2(20, 20) - image_control.size * image_control.scale
+	var view_bounds_max := size - Vector2(20, 20)
+	image_control.position = image_control.position.clamp(view_bounds_min, view_bounds_max)
+
 	if _displayed_image != document.output_image:
 		_displayed_image = document.output_image
 		image_control.texture = ImageTexture.create_from_image(_displayed_image)
