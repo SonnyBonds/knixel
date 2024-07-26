@@ -1,6 +1,6 @@
 class_name BrushToolBase extends Tool
 
-@export_range(1, 500) var radius : int = 20
+@export_range(1, 500) var size : int = 20
 @export_range(0, 100) var hardness : int = 10
 
 enum Mode { UNKNOWN, BRUSH, ERASER }
@@ -10,7 +10,7 @@ var _overlay : Control
 var _painting : bool
 var _last_splat_point : Vector2
 var _brush_texture : RID
-var _brush_radius : int = 0
+var _brush_size : int = 0
 var _brush_hardness : int = 0
 var _splat_queue : Array[Vector2]
 var _paint_framebuffer : Dictionary
@@ -194,7 +194,7 @@ func _update_blended_image():
 		_framebuffer_pool.release_framebuffer(blended_framebuffer.framebuffer)
 
 func _update_brush():
-	if not _brush_texture or _brush_hardness != hardness or _brush_radius != radius:
+	if not _brush_texture or _brush_hardness != hardness or _brush_size != size:
 		if _brush_texture:
 			ImageProcessor.render_device.free_rid(_brush_texture)
 
@@ -207,8 +207,8 @@ func _update_brush():
 		gradient.fill = GradientTexture2D.FILL_RADIAL
 		gradient.fill_to = Vector2(0.5, 0.0)
 		gradient.fill_from = Vector2(0.5, 0.5)
-		gradient.width = radius*2
-		gradient.height = radius*2
+		gradient.width = size+2
+		gradient.height = size+2
 
 		# TODO: Should probably be able to use the GradientTexture right away with get_rid 
 		# or something, but couldn't manage getting that working so let's just copy it.
@@ -218,7 +218,7 @@ func _update_brush():
 		gradient_image.convert(Image.FORMAT_RGBAF)
 		_brush_texture = ImageProcessor.create_texture_from_image(gradient_image)
 		_brush_hardness = hardness
-		_brush_radius = radius
+		_brush_size = size
 
 func _process_queue():
 	_update_brush()
@@ -237,8 +237,9 @@ func _process_queue():
 	_update_blended_image()
 
 func _splat(pos : Vector2, color : Color):
-	var brush_pos := Vector2i(pos) - Vector2i(_brush_radius, _brush_radius)
-	var brush_rect := Rect2i(brush_pos, Vector2i(radius, radius)*2)
+	var brush_texture_size := ImageProcessor.get_texture_size(_brush_texture)
+	var brush_pos := Vector2i(pos) - Vector2i(1, 1) * int(round(_brush_size*0.5))
+	var brush_rect := Rect2i(brush_pos, brush_texture_size)
 
 	brush_rect = brush_rect.intersection(Rect2i(Vector2i.ZERO, _paint_framebuffer.size))
 	if brush_rect.has_area():
@@ -266,7 +267,7 @@ func _splat_from_last(pos : Vector2, force : bool = false):
 	if not layer:
 		return
 
-	var splat_interval = radius * 0.25
+	var splat_interval = size * 0.25
 	_update_brush()
 
 	var splat_color := Color.WHITE if _mode == Mode.ERASER else canvas.document.foreground_color
@@ -295,8 +296,8 @@ func _splat_from_last(pos : Vector2, force : bool = false):
 func _draw_overlay():
 	var pos := _overlay.get_local_mouse_position()
 	var scale := _image_control.scale.x
-	_overlay.draw_circle(pos, radius * scale + 1, Color.BLACK, false, -1.0, true)
-	_overlay.draw_circle(pos, radius * scale, Color.WHITE, false, -1.0, true)
+	_overlay.draw_circle(pos, size * 0.25 * scale + 1, Color.BLACK, false, -1.0, true)
+	_overlay.draw_circle(pos, size * 0.25 * scale, Color.WHITE, false, -1.0, true)
 
 func process():
 	_process_queue()
