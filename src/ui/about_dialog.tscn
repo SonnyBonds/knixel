@@ -1,0 +1,74 @@
+[gd_scene load_steps=2 format=3 uid="uid://bkw4r5kt5rwhv"]
+
+[ext_resource type="Script" path="res://src/ui/about_dialog.gd" id="1_j8u0r"]
+
+[node name="AboutDialog" type="Window"]
+auto_translate_mode = 1
+disable_3d = true
+title = "About Knixel"
+position = Vector2i(0, 61)
+size = Vector2i(300, 100)
+exclusive = true
+script = ExtResource("1_j8u0r")
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -110.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_type_variation = &"ButtonBarContainer"
+
+[node name="OkButton" type="Button" parent="Panel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cool"
+
+[node name="GridContainer" type="GridContainer" parent="."]
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 209.0
+offset_bottom = 71.0
+size_flags_horizontal = 8
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+columns = 2
+
+[node name="Label" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Knixel Image Editor"
+
+[node name="KnixelVersionLabel" type="Label" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Built with Godot Engine"
+
+[node name="GodotVersionLabel" type="Label" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2

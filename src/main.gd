@@ -10,7 +10,8 @@ enum { FILE_NEW, FILE_OPEN, FILE_CLOSE, FILE_SAVE, FILE_SAVE_AS, FILE_EXPORT, FI
 	   EDIT_UNDO, EDIT_REDO, EDIT_CUT, EDIT_COPY, EDIT_COPY_MERGED, EDIT_PASTE, EDIT_SELECT_ALL, EDIT_FILL_FOREGROUND, EDIT_FILL_BACKGROUND, EDIT_CLEAR_SELECTION, EDIT_DELETE,
 	   IMAGE_RESIZE_IMAGE, IMAGE_RESIZE_CANVAS,
 	   VIEW_RESET_VIEW, VIEW_VIEW_TILED,
-	   LAYER_NEW, LAYER_NEW_FOLDER, LAYER_DUPLICATE, LAYER_MERGE_DOWN }
+	   LAYER_NEW, LAYER_NEW_FOLDER, LAYER_DUPLICATE, LAYER_MERGE_DOWN,
+	   HELP_ABOUT }
 
 @onready var canvas_container := %CanvasContainer as TabContainer
 @onready var _swap_colors_button := %SwapColorsButton as Button
@@ -35,6 +36,9 @@ func _ready():
 	get_window().gui_embed_subwindows = false
 	var dpi_scale = 2 if DisplayServer.screen_get_dpi() >= 192 and DisplayServer.screen_get_size().x >= 2048 else 1
 	get_viewport().content_scale_factor = dpi_scale
+
+	$AboutDialog.content_scale_factor = dpi_scale
+	$AboutDialog.size *= dpi_scale
 
 	%ForegroundColorBox.commit.connect(_on_foreground_commit)
 	%BackgroundColorBox.commit.connect(_on_background_commit)	
@@ -112,6 +116,13 @@ func _ready():
 	menu.get_popup().add_item("New Folder", LAYER_NEW_FOLDER)
 	menu.get_popup().add_item("Duplicate", LAYER_DUPLICATE, KEY_MASK_CTRL | KEY_J)
 	menu.get_popup().add_item("Merge Down", LAYER_MERGE_DOWN, KEY_MASK_CTRL | KEY_E)
+
+	menu = MenuButton.new()
+	menu.switch_on_hover = true
+	menu.text = "Help"
+	%MenuBar.add_child(menu)
+	menu.get_popup().id_pressed.connect(_on_menu_pressed)
+	menu.get_popup().add_item("About", HELP_ABOUT)
 
 	$FileOpenDialog.file_selected.connect(_on_file_open_selected)
 	$FileOpenDialog.filters = [
@@ -323,6 +334,8 @@ func _on_menu_pressed(id : int) -> void:
 			if active_canvas.document.selected_layer_id != 0:
 				active_canvas.document.selected_layer_id = active_canvas.document.merge_down(active_canvas.document.selected_layer_id)
 				active_canvas.document.selected_effect_id = 0
+		HELP_ABOUT:
+			$AboutDialog.popup_centered()
 
 func _on_file_open_selected(file : String) -> void:
 	load_from_file(file)

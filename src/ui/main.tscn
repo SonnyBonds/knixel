@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://djijed1j0fltc"]
+[gd_scene load_steps=26 format=3 uid="uid://djijed1j0fltc"]
 
 [ext_resource type="Script" path="res://src/main.gd" id="1_2kqib"]
 [ext_resource type="Texture2D" uid="uid://v8x5oroetip3" path="res://icons/tool_move.svg" id="2_pcivx"]
@@ -21,6 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://np8lq4egxq7p" path="res://src/ui/key_display.tscn" id="15_0wfac"]
 [ext_resource type="PackedScene" uid="uid://doidxxblb7se1" path="res://src/ui/layer_list.tscn" id="15_w025m"]
 [ext_resource type="Script" path="res://src/ui/tool_panel.gd" id="18_27bix"]
+[ext_resource type="PackedScene" uid="uid://bkw4r5kt5rwhv" path="res://src/ui/about_dialog.tscn" id="22_g07yo"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_53gu5"]
 bg_color = Color(0.184314, 0.184314, 0.184314, 1)
@@ -59,6 +60,9 @@ size = Vector2i(541, 175)
 ok_button_text = "Save"
 access = 2
 use_native_dialog = true
+
+[node name="AboutDialog" parent="." instance=ExtResource("22_g07yo")]
+visible = false
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1
