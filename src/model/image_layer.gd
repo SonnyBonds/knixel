@@ -4,6 +4,9 @@ class_name ImageLayer extends Layer
 var _texture_image : Image
 var _texture_rid : RID
 
+func get_size() -> Vector2i:
+    return image.get_size()
+
 func rescale(scale : Vector2) -> void:
     offset = Vector2i(Vector2(offset) * scale)
     image = image.duplicate()

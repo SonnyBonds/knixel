@@ -4,6 +4,7 @@ layout( push_constant ) uniform constants
     ivec2 dst_offset;
     vec4 rect;
     vec4 color;
+    ivec4 wrap_rect;
 } inputs;
 
 void main()

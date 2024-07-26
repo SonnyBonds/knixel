@@ -16,6 +16,7 @@ enum { FILE_NEW, FILE_OPEN, FILE_CLOSE, FILE_SAVE, FILE_SAVE_AS, FILE_EXPORT, FI
 @onready var _swap_colors_button := %SwapColorsButton as Button
 @onready var _reset_colors_button := %ResetColorsButton as Button
 
+var _tiling_menu : PopupMenu
 var _view_menu : MenuButton
 
 func _init():
@@ -86,6 +87,13 @@ func _ready():
 	menu.get_popup().add_item("View Tiled", VIEW_VIEW_TILED, KEY_MASK_ALT | KEY_T)
 	_view_menu = menu
 
+	_tiling_menu = PopupMenu.new()
+	_tiling_menu.id_pressed.connect(_on_tiling_menu_pressed)
+	_tiling_menu.add_item("None", Document.Tiling.NONE)
+	_tiling_menu.add_item("Horizontal", Document.Tiling.HORIZONTAL)
+	_tiling_menu.add_item("Vertical", Document.Tiling.VERTICAL)
+	_tiling_menu.add_item("Both", Document.Tiling.BOTH)
+
 	menu = MenuButton.new()
 	menu.switch_on_hover = true
 	menu.text = "Image"
@@ -93,6 +101,7 @@ func _ready():
 	menu.get_popup().id_pressed.connect(_on_menu_pressed)
 	menu.get_popup().add_item("Resize Image...", IMAGE_RESIZE_IMAGE, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_I)
 	menu.get_popup().add_item("Resize Canvas...", IMAGE_RESIZE_CANVAS, KEY_MASK_CTRL | KEY_MASK_ALT | KEY_C)
+	menu.get_popup().add_submenu_node_item("Tiling", _tiling_menu)
 
 	menu = MenuButton.new()
 	menu.switch_on_hover = true
@@ -243,6 +252,10 @@ func _on_resize_canvas_dialog_submitted(dialog : ResizeCanvasDialog) -> void:
 
 	active_canvas.document.resize_canvas(Vector2i(dialog.new_width, dialog.new_height), dialog.horizontal_alignment, dialog.vertical_alignment)
 
+func _on_tiling_menu_pressed(id : int) -> void:
+	if active_canvas:
+		active_canvas.document.tiling = id
+
 func _on_menu_pressed(id : int) -> void:
 	match id:
 		FILE_NEW:
@@ -386,6 +399,13 @@ func _process(_delta):
 			_view_menu.get_popup().set_item_icon(tiled_item, preload("res://icons/menu_checkbox_checked.svg"))
 		else:
 			_view_menu.get_popup().set_item_icon(tiled_item, preload("res://icons/menu_checkbox.svg"))
+
+		for i in _tiling_menu.item_count:
+			_tiling_menu.set_item_icon_max_width(i, 16)
+			if i == active_canvas.document.tiling:
+				_tiling_menu.set_item_icon(i, preload("res://icons/menu_checkbox_checked.svg"))
+			else:
+				_tiling_menu.set_item_icon(i, preload("res://icons/menu_checkbox.svg"))
 	else:
 		_swap_colors_button.disabled = true
 		_reset_colors_button.disabled = true
@@ -397,6 +417,10 @@ func _process(_delta):
 		# TODO: Not using checkbox items because of DPI issues. Need to figure that out.
 		_view_menu.get_popup().set_item_icon_max_width(tiled_item, 16)
 		_view_menu.get_popup().set_item_icon(tiled_item, preload("res://icons/menu_checkbox.svg"))	
+
+		for i in _tiling_menu.item_count:
+			_tiling_menu.set_item_icon_max_width(i, 16)
+			_tiling_menu.set_item_icon(i, preload("res://icons/menu_checkbox.svg"))
 
 func load_from_file(path : String) -> void:
 	if not FileAccess.file_exists(path):

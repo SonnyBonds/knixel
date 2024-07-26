@@ -7,9 +7,10 @@ var _drag_pos : Vector2
 var _drag_state := State.NONE
 var _drag_mode : Mode
 var _selection_start : Vector2
-var _drag_image : Image
-var _back_image_offset : Vector2i
-var _back_image : Image
+var _drag_texture : RID
+var _back_texture_offset : Vector2i
+var _back_texture : RID
+var _framebuffer_pool := ImageProcessor.FramebufferPool.new()
 
 enum State { NONE, BOX, SELECTION }
 enum Mode { ADD, SUBTRACT, REPLACE }
@@ -30,7 +31,23 @@ func deactivate() -> void:
 	_overlay.draw.disconnect(_draw_overlay)
 	_overlay.queue_redraw()
 
+	_framebuffer_pool.flush()
+
+	_release_back_texture()
+	_release_drag_texture()
+
 	super()
+
+func _release_drag_texture():
+	if _drag_texture:
+		ImageProcessor.render_device.free_rid(_drag_texture)
+		_drag_texture = RID()
+
+func _release_back_texture():
+	if _back_texture:
+		ImageProcessor.render_device.free_rid(_back_texture)
+		_back_texture = RID()
+
 
 func _hovers_selection(pos : Vector2i) -> bool:
 	if not canvas.document.selection:
@@ -55,30 +72,31 @@ func _gui_event(event: InputEvent) -> void:
 				var layer := canvas.document.get_selected_layer()
 				if layer:
 					if button.ctrl_pressed:
-						if not _drag_image:
-							_drag_image = ImageProcessor.crop_or_extend(layer.image, Rect2i(canvas.document.selection_offset - layer.offset, canvas.document.selection.get_size()))
-							_drag_image = ImageProcessor.apply_mask(_drag_image, canvas.document.selection)
+						if not _drag_texture:
+							var drag_image := ImageProcessor.crop_or_extend(layer.image, Rect2i(canvas.document.selection_offset - layer.offset, canvas.document.selection.get_size()))
+							drag_image = ImageProcessor.apply_mask(drag_image, canvas.document.selection)
+							_drag_texture = ImageProcessor.create_texture_from_image(drag_image)
 
 							if not button.alt_pressed:
 								canvas.document.delete_selection()
 
-							_back_image_offset = layer.offset
-							_back_image = layer.image.duplicate()
+							_back_texture_offset = layer.offset
+							_back_texture = ImageProcessor.create_texture_from_image(layer.image)
 
 							_update_dragged_image()
 						elif button.alt_pressed:
-							_back_image_offset = layer.offset
-							_back_image = layer.image.duplicate()
+							_back_texture_offset = layer.offset
+							_back_texture = ImageProcessor.create_texture_from_image(layer.image)
 					else:
-						_back_image = null
-						_drag_image = null
+						_release_back_texture()
+						_release_drag_texture()
 				else:
-					_back_image = null
-					_drag_image = null
+					_release_back_texture()
+					_release_drag_texture()
 			else:
 				canvas.document.start_undo_block()
-				_back_image = null
-				_drag_image = null
+				_release_back_texture()
+				_release_drag_texture()
 				_drag_start = button.position
 				_drag_pos = _drag_start
 				_drag_mode = Mode.REPLACE
@@ -113,24 +131,55 @@ func _gui_event(event: InputEvent) -> void:
 		elif _drag_state == State.SELECTION:
 			_drag_pos = motion.position
 			canvas.document.selection_offset = Vector2i(_selection_start + canvas.pos_to_selection(_drag_pos) - canvas.pos_to_selection(_drag_start))
-			if _drag_image:
+			if _drag_texture:
 				_update_dragged_image()
 
 func _update_dragged_image():
 	var layer := canvas.document.get_selected_layer()
 	if layer:
 		var dest_pos := canvas.document.selection_offset
-		var rect := Rect2i(_back_image_offset, _back_image.get_size())
-		var drag_rect := Rect2i(dest_pos, _drag_image.get_size())
-		var image := _back_image
-		if not rect.encloses(drag_rect):
-			rect = rect.merge(drag_rect)
-			image = ImageProcessor.crop_or_extend(_back_image, rect, _back_image_offset)
-		canvas.document.start_undo_block()
-		# TODO: This blend method should not be used for continuous updates like these
-		layer.image = ImageProcessor.blend(_drag_image, image, Vector2i(dest_pos) - rect.position, Color.WHITE)
+		var rect := Rect2i(_back_texture_offset, ImageProcessor.get_texture_size(_back_texture))
+		var drag_rect := Rect2i(dest_pos, ImageProcessor.get_texture_size(_drag_texture))
+		var tiling := canvas.document.tiling
+		var document_size := canvas.document.size
+		var wrap_rect : Rect2i
+		if tiling != Document.Tiling.HORIZONTAL and tiling != Document.Tiling.BOTH:
+			if drag_rect.position.x < rect.position.x:
+				rect.size.x += rect.position.x - drag_rect.position.x
+				rect.position.x = drag_rect.position.x
+			if drag_rect.end.x > rect.end.x:
+				rect.end.x = drag_rect.end.x
+		else:
+			rect.size.x = max(rect.size.x, document_size.x)
+			wrap_rect.size.x = rect.size.x
+		if tiling != Document.Tiling.VERTICAL and tiling != Document.Tiling.BOTH:
+			if drag_rect.position.y < rect.position.y:
+				rect.size.y += rect.position.y - drag_rect.position.y
+				rect.position.y = drag_rect.position.y
+			if drag_rect.end.y > rect.end.y:
+				rect.end.y = drag_rect.end.y
+		else:
+			rect.size.y = max(rect.size.y, document_size.y)
+			wrap_rect.size.y = rect.size.y
+
+		var blended_framebuffer := _framebuffer_pool.get_framebuffer(rect.size)
+		ImageProcessor.blend_async(blended_framebuffer,
+			_drag_texture,
+			Vector2i(dest_pos) - rect.position,
+			_back_texture, 
+			_back_texture_offset - rect.position,
+			Color.WHITE,
+			Rect2i(Vector2i.ZERO, blended_framebuffer.size), 
+			ImageProcessor.BlendMode.Normal,
+			wrap_rect)
+
+		ImageProcessor.render_device.submit()
+		ImageProcessor.render_device.sync()
+
+		var byte_data : PackedByteArray = ImageProcessor.render_device.texture_get_data(blended_framebuffer.texture, 0)
+		layer.image = Image.create_from_data(rect.size.x, rect.size.y, false, Image.FORMAT_RGBAF, byte_data)
 		layer.offset = rect.position
-		canvas.document.end_undo_block()
+		_framebuffer_pool.release_framebuffer(blended_framebuffer.framebuffer)
 	
 func _update_cursor():
 	var hover := _hovers_selection(canvas.get_local_mouse_position())

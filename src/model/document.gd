@@ -1,9 +1,12 @@
 class_name Document extends KnixelResource
 
+enum Tiling { NONE, HORIZONTAL, VERTICAL, BOTH }
+
 @export var size : Vector2i
 @export var layers : Array[Layer] = []
 @export var selected_layer_id : int = 0
 @export var selected_effect_id : int = 0
+@export var tiling := Tiling.NONE
 
 var view_tiled := false
 
@@ -22,6 +25,7 @@ var _undo_state : Document
 var _undo_block_counter : int = 0
 
 var _rendered_layers : Array[Layer]
+var _rendered_tiling := tiling
 
 func reset_undo() -> void:
 	_undo_state.copy_from(self)
@@ -64,6 +68,9 @@ func check() -> bool:
 	if output_image == null or output_image.get_size() != size:
 		dirty = true
 
+	if _rendered_tiling != tiling:
+		dirty = true
+		
 	if not dirty:
 		if len(layers) != len(_rendered_layers):
 			dirty = true
@@ -386,16 +393,47 @@ func _render_compiled_layer_list(framebuffer_pool : ImageProcessor.FramebufferPo
 				assert(entry.op == &"blend")
 				layer_output = entry.output
 		else:
+			# Render the layer...
 			layer_output = layer.render(framebuffer_pool)
+			# ...and if the document is tiled we need to apply the tiling
+			if tiling != Tiling.NONE:
+
+				# Calculate a wrap rect and offset depending on which axes we're tiled along.
+				# The output will be sized to the document size & wrapped along a tiled axis,
+				# but keep its original size along a non-tiled axis.
+				var output_size = ImageProcessor.get_texture_size(layer_output.texture)
+				var wrap_rect : Rect2i
+				var layer_offset : Vector2i
+				var output_offset : Vector2i = layer_output.offset 
+				if tiling == Tiling.HORIZONTAL or tiling == Tiling.BOTH:
+					layer_offset.x = output_offset.x
+					output_offset.x = 0
+					output_size.x = size.x
+					wrap_rect.size.x = size.x
+				if tiling == Tiling.VERTICAL or tiling == Tiling.BOTH:
+					layer_offset.y = output_offset.y
+					output_offset.y = 0
+					output_size.y = size.y
+					wrap_rect.size.y = size.y
+
+				# Apply the tiling to a new framebuffer
+				var tiled_framebuffer := framebuffer_pool.get_framebuffer(output_size)
+				ImageProcessor.apply_tiling_async(
+					tiled_framebuffer,
+					layer_output.texture,
+					layer_offset,
+					wrap_rect)
+				framebuffer_pool.release_framebuffer_by_texture(layer_output.texture)
+				layer_output.texture = tiled_framebuffer.texture
+				layer_output.offset = output_offset
 
 		# Add any effects...	
 		for effect : Effect in layer.effects:
 			if effect.visible:
-				var new_output := effect.render(framebuffer_pool, layer_output.texture)
+				var new_output := effect.render(framebuffer_pool, layer_output.texture, layer_output.offset, self)
 				if new_output.texture != layer_output.texture:
 					framebuffer_pool.release_framebuffer_by_texture(layer_output.texture)
-				layer_output.texture = new_output.texture
-				layer_output.offset += new_output.offset
+				layer_output = new_output
 
 		# If it's the first layer with no blending, we're done and this is the output
 		if not last_output and layer.opacity == 1 and layer.blend_mode == ImageProcessor.BlendMode.Normal:
@@ -524,6 +562,7 @@ func _render() -> void:
 		# Keep a copy of last rendered layers to compare to for figuring out if we need to re-render 
 		_rendered_layers.push_back(layer.clone())
 
+	_rendered_tiling = tiling
 
 func merge_down(layer_id : int) -> int:
 	var start_index : int = -1

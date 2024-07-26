@@ -59,6 +59,8 @@ func deactivate() -> void:
 		ImageProcessor.render_device.free_rid(_brush_texture)
 		_brush_texture = RID()
 
+	_framebuffer_pool.flush()
+
 	super()
 
 func _gui_event(event: InputEvent) -> void:
@@ -99,7 +101,7 @@ func _gui_event(event: InputEvent) -> void:
 			ImageProcessor.render_device.texture_clear(_paint_framebuffer_copy_texture, Color(0, 0, 0, 0), 0, 1, 0, 1)
 			_last_splat_point = canvas.pos_to_image(canvas.get_local_mouse_position())
 			_update_brush()
-			_try_splat(_last_splat_point, true)
+			_splat_from_last(_last_splat_point, true)
 			_update_blended_image()
 		else:
 			_process_queue()
@@ -128,41 +130,60 @@ func _gui_event(event: InputEvent) -> void:
 func _update_blended_image():
 	var layer := canvas.document.get_selected_layer()
 	if layer:
-		var rect := Rect2i(_back_texture_offset, ImageProcessor.get_texture_size(_back_texture))
-		var paint_rect := Rect2i(Vector2i.ZERO, ImageProcessor.get_texture_size(_paint_framebuffer.texture))
-		if not rect.encloses(paint_rect):
-			rect = rect.merge(paint_rect)
-
-		var blended_framebuffer := _framebuffer_pool.get_framebuffer(rect.size)
+		var masked_framebuffer : Dictionary
+		var final_paint_framebuffer : Dictionary
 		if _selection_texture:
-			var masked_framebuffer := _framebuffer_pool.get_framebuffer(_paint_framebuffer.size)
+			masked_framebuffer = _framebuffer_pool.get_framebuffer(_paint_framebuffer.size)
 			ImageProcessor.render_device.texture_clear(masked_framebuffer.texture, Color(0, 0, 0, 0), 0, 1, 0, 1)
 			ImageProcessor.blend_async(masked_framebuffer, 
 				_selection_texture,
-				_selection_texture_offset - layer.offset - rect.position,
+				_selection_texture_offset,
 				_paint_framebuffer.texture, 
-				Vector2i.ZERO,
+				Vector2i.ZERO,	
 				Color.WHITE,
 				Rect2i(Vector2i.ZERO, _paint_framebuffer.size),
 				ImageProcessor.BlendMode.InternalApplySelectionMask)
-			ImageProcessor.blend_async(blended_framebuffer, 
-				masked_framebuffer.texture, 
-				-rect.position,
-				_back_texture, 
-				_back_texture_offset - rect.position,
-				Color.WHITE,
-				Rect2i(Vector2i.ZERO, blended_framebuffer.size), 
-				ImageProcessor.BlendMode.Erase if _mode == Mode.ERASER else ImageProcessor.BlendMode.Normal)
-			_framebuffer_pool.release_framebuffer(masked_framebuffer.framebuffer)
+			final_paint_framebuffer = masked_framebuffer
 		else:
-			ImageProcessor.blend_async(blended_framebuffer, 
-				_paint_framebuffer.texture, 
-				-rect.position, 
-				_back_texture, 
-				_back_texture_offset - rect.position,
-				Color.WHITE,
-				Rect2i(Vector2i.ZERO, blended_framebuffer.size), 
-				ImageProcessor.BlendMode.Erase if _mode == Mode.ERASER else ImageProcessor.BlendMode.Normal)
+			final_paint_framebuffer = _paint_framebuffer
+
+		var rect := Rect2i(_back_texture_offset, ImageProcessor.get_texture_size(_back_texture))
+		var paint_rect := Rect2i(Vector2i.ZERO, ImageProcessor.get_texture_size(_paint_framebuffer.texture))
+		var tiling := canvas.document.tiling
+		var document_size := canvas.document.size
+		var wrap_rect : Rect2i
+		if tiling != Document.Tiling.HORIZONTAL and tiling != Document.Tiling.BOTH:
+			if paint_rect.position.x < rect.position.x:
+				rect.size.x += rect.position.x - paint_rect.position.x
+				rect.position.x = paint_rect.position.x
+			if paint_rect.end.x > rect.end.x:
+				rect.end.x = paint_rect.end.x
+		else:
+			rect.size.x = max(rect.size.x, document_size.x)
+			wrap_rect.size.x = rect.size.x
+		if tiling != Document.Tiling.VERTICAL and tiling != Document.Tiling.BOTH:
+			if paint_rect.position.y < rect.position.y:
+				rect.size.y += rect.position.y - paint_rect.position.y
+				rect.position.y = paint_rect.position.y
+			if paint_rect.end.y > rect.end.y:
+				rect.end.y = paint_rect.end.y
+		else:
+			rect.size.y = max(rect.size.y, document_size.y)
+			wrap_rect.size.y = rect.size.y
+
+		var blended_framebuffer := _framebuffer_pool.get_framebuffer(rect.size)
+		ImageProcessor.blend_async(blended_framebuffer,
+			final_paint_framebuffer.texture, 
+			-rect.position,
+			_back_texture, 
+			_back_texture_offset - rect.position,
+			Color.WHITE,
+			Rect2i(Vector2i.ZERO, blended_framebuffer.size), 
+			ImageProcessor.BlendMode.Erase if _mode == Mode.ERASER else ImageProcessor.BlendMode.Normal,
+			wrap_rect)
+
+		if masked_framebuffer:
+			_framebuffer_pool.release_framebuffer(masked_framebuffer.framebuffer)
 
 		ImageProcessor.render_device.submit()
 		ImageProcessor.render_device.sync()
@@ -210,12 +231,37 @@ func _process_queue():
 		return
 
 	for pos in _splat_queue:
-		_try_splat(pos)
+		_splat_from_last(pos)
 	_splat_queue.clear()
 
 	_update_blended_image()
 
-func _try_splat(pos : Vector2, force : bool = false):
+func _splat(pos : Vector2, color : Color):
+	var brush_pos := Vector2i(pos) - Vector2i(_brush_radius, _brush_radius)
+	var brush_rect := Rect2i(brush_pos, Vector2i(radius, radius)*2)
+
+	brush_rect = brush_rect.intersection(Rect2i(Vector2i.ZERO, _paint_framebuffer.size))
+	if brush_rect.has_area():
+	
+		# TODO: This blending can probably be done with premultiplied alpha instead
+		# and use regular blend functions to avoid the texture copy back for each splat
+		ImageProcessor.blend_async(
+			_paint_framebuffer,
+			_brush_texture,
+			brush_pos,
+			_paint_framebuffer_copy_texture,
+			Vector2i.ZERO,
+			color,
+			brush_rect)
+
+		ImageProcessor.render_device.texture_copy(
+			_paint_framebuffer.texture, 
+			_paint_framebuffer_copy_texture, 
+			Vector3(brush_rect.position.x, brush_rect.position.y, 0), 
+			Vector3(brush_rect.position.x, brush_rect.position.y, 0), 
+			Vector3(brush_rect.size.x, brush_rect.size.y, 0), 0, 0, 0, 0)
+
+func _splat_from_last(pos : Vector2, force : bool = false):
 	var layer = canvas.document.get_selected_layer() as ImageLayer
 	if not layer:
 		return
@@ -225,31 +271,25 @@ func _try_splat(pos : Vector2, force : bool = false):
 
 	var splat_color := Color.WHITE if _mode == Mode.ERASER else canvas.document.foreground_color
 
+	var h_offsets : Array
+	var v_offsets : Array
+
+	if canvas.document.tiling == Document.Tiling.HORIZONTAL or canvas.document.tiling == Document.Tiling.BOTH:
+		h_offsets = [-canvas.document.size.x, 0, canvas.document.size.x]
+	else:
+		h_offsets = [0]
+
+	if canvas.document.tiling == Document.Tiling.VERTICAL or canvas.document.tiling == Document.Tiling.BOTH:
+		v_offsets = [-canvas.document.size.y, 0, canvas.document.size.y]
+	else:
+		v_offsets = [0]
+
 	while _last_splat_point.distance_to(pos) > splat_interval or force:
 		_last_splat_point = _last_splat_point.move_toward(pos, splat_interval)
 
-		var brush_pos := Vector2i(_last_splat_point) - Vector2i(_brush_radius, _brush_radius)
-		var brush_rect := Rect2i(brush_pos, Vector2i(radius, radius)*2)
-		# TODO: This blending can probably be done with premultiplied alpha instead
-		# and use regular blend functions to avoid the texture copy back for each splat
-		ImageProcessor.blend_async(
-			_paint_framebuffer,
-			_brush_texture,
-			brush_pos,
-			_paint_framebuffer_copy_texture,
-			Vector2i.ZERO,
-			splat_color,
-			brush_rect)
-
-		brush_rect = brush_rect.intersection(Rect2i(Vector2i.ZERO, _paint_framebuffer.size))
-		if brush_rect.has_area():
-			ImageProcessor.render_device.texture_copy(
-				_paint_framebuffer.texture, 
-				_paint_framebuffer_copy_texture, 
-				Vector3(brush_rect.position.x, brush_rect.position.y, 0), 
-				Vector3(brush_rect.position.x, brush_rect.position.y, 0), 
-				Vector3(brush_rect.size.x, brush_rect.size.y, 0), 0, 0, 0, 0)
-
+		for h_offset in h_offsets:
+			for v_offset in v_offsets:
+				_splat(_last_splat_point + Vector2(h_offset, v_offset), splat_color)
 		force = false
 
 func _draw_overlay():

@@ -22,6 +22,13 @@ class FramebufferPool extends RefCounted:
 				ImageProcessor.render_device.free_rid(entry.framebuffer)
 				ImageProcessor.render_device.free_rid(entry.texture)
 
+	func flush():
+		for entry in available_framebuffers:
+			ImageProcessor.render_device.free_rid(entry.framebuffer)
+			ImageProcessor.render_device.free_rid(entry.texture)
+
+		available_framebuffers.clear()
+
 	func get_framebuffer(size : Vector2i) -> Dictionary:
 		var entry : Dictionary
 		for i in len(available_framebuffers):
@@ -185,6 +192,20 @@ static func _create_blend_pipeline(rd : RenderingDevice, blend_shader : RDShader
 	return pipeline
 
 static var _blend_pipelines := {}
+
+static func _create_apply_tiling_pipeline(rd : RenderingDevice) -> ProcessingPipeline:
+	var pipeline := ProcessingPipeline.new(rd)
+
+	var blend_attachment = RDPipelineColorBlendStateAttachment.new()
+	blend_attachment.enable_blend = false
+
+	pipeline.color_blend_state.attachments = [blend_attachment]
+	
+	pipeline.shader = rd.shader_create_from_spirv(preload("res://src/shaders/operations/apply_tiling.glsl").get_spirv())
+
+	return pipeline
+
+static var _apply_tiling_pipeline := _create_apply_tiling_pipeline(render_device)
 
 static func _create_blur_pipeline(rd : RenderingDevice) -> ProcessingPipeline:
 	var pipeline := ProcessingPipeline.new(rd)
@@ -504,16 +525,34 @@ static func srgb_to_linear(image : Image) -> Image:
 
 	return new_image
 
-static func blur_async(framebuffer : RID, src_texture : RID, radius : float, direction : Vector2i, offset : Vector2i):
+static func blur_async(framebuffer : RID, src_texture : RID, radius : float, direction : Vector2i, offset : Vector2i, wrap_rect := Rect2i(0, 0, 0, 0)):
 	var rids : Array[RID] = []
 
+	var src_size := get_texture_size(src_texture)
+
+	# TODO: Maybe not use arbitrary min/max int?
+	var wrap_rect_min := Vector2i(-100000, -100000)
+	var wrap_rect_max := Vector2i(100000, 100000)
+	if wrap_rect.size.x > 0:
+		wrap_rect_min.x = wrap_rect.position.x
+		wrap_rect_max.x = wrap_rect.position.x + wrap_rect.size.x
+	if wrap_rect.size.y > 0:
+		wrap_rect_min.y = wrap_rect.position.y
+		wrap_rect_max.y = wrap_rect.position.y + wrap_rect.size.y
+
 	var constants := PackedByteArray()
-	constants.resize(32)
+	constants.resize(48)
 	constants.encode_float(0, radius)
 	constants.encode_s32(8, direction.x)
 	constants.encode_s32(12, direction.y)
 	constants.encode_s32(16, offset.x)
 	constants.encode_s32(20, offset.y)
+	constants.encode_s32(24, src_size.x)
+	constants.encode_s32(28, src_size.y)
+	constants.encode_s32(32, wrap_rect_min.x)
+	constants.encode_s32(36, wrap_rect_min.y)
+	constants.encode_s32(40, wrap_rect_max.x)
+	constants.encode_s32(44, wrap_rect_max.y)
 
 	var sampler_state := RDSamplerState.new()
 	var sampler = render_device.sampler_create(sampler_state)
@@ -567,11 +606,69 @@ static func get_texture_size(texture : RID) -> Vector2i:
 	var format := render_device.texture_get_format(texture)
 	return Vector2i(format.width, format.height)
 		
-static func blend_async(framebuffer : Dictionary, src_texture : RID, src_offset : Vector2i, dst_texture : RID, dst_offset : Vector2i, color : Color, rect : Rect2i = Rect2i(Vector2i.ZERO, framebuffer.size), blend_mode : BlendMode = BlendMode.Normal):
+static func apply_tiling_async(framebuffer : Dictionary, src_texture : RID, src_offset : Vector2i, wrap_rect := Rect2i(0, 0, 0, 0)):
 	var rids : Array[RID] = []
 
+	# TODO: Maybe not use arbitrary min/max int?
+	var wrap_rect_min := Vector2i(-100000, -100000)
+	var wrap_rect_max := Vector2i(100000, 100000)
+	if wrap_rect.size.x > 0:
+		wrap_rect_min.x = wrap_rect.position.x
+		wrap_rect_max.x = wrap_rect.position.x + wrap_rect.size.x
+	if wrap_rect.size.y > 0:
+		wrap_rect_min.y = wrap_rect.position.y
+		wrap_rect_max.y = wrap_rect.position.y + wrap_rect.size.y
+
 	var constants := PackedByteArray()
-	constants.resize(48)
+	constants.resize(32)
+	constants.encode_s32(0, src_offset.x)
+	constants.encode_s32(4, src_offset.y)
+	constants.encode_s32(16, wrap_rect_min.x)
+	constants.encode_s32(20, wrap_rect_min.y)
+	constants.encode_s32(24, wrap_rect_max.x)
+	constants.encode_s32(28, wrap_rect_max.y)
+
+	var sampler_state := RDSamplerState.new()
+	var sampler = render_device.sampler_create(sampler_state)
+	rids.push_back(sampler)
+
+	var src_tex_uniform = RDUniform.new()
+	src_tex_uniform.binding = 0
+	src_tex_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
+	src_tex_uniform.add_id(sampler)
+	src_tex_uniform.add_id(src_texture)
+	
+	var uniform_set := render_device.uniform_set_create([src_tex_uniform], _apply_tiling_pipeline.shader, 0)
+	rids.push_back(uniform_set)
+
+	var clear_colors = PackedColorArray([Color(1, 1, 1, 1)])
+	var draw_list = render_device.draw_list_begin(framebuffer.framebuffer, RenderingDevice.INITIAL_ACTION_DISCARD, RenderingDevice.FINAL_ACTION_READ, RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_DISCARD, clear_colors)
+	render_device.draw_list_bind_render_pipeline(draw_list, _apply_tiling_pipeline.get_for_framebuffer(framebuffer.framebuffer))
+	render_device.draw_list_bind_index_array(draw_list, _rect_index_array)
+	render_device.draw_list_set_push_constant(draw_list, constants, constants.size())
+	render_device.draw_list_bind_uniform_set(draw_list, uniform_set, 0)
+	render_device.draw_list_draw(draw_list, true, 1)
+	render_device.draw_list_end()
+
+	rids.reverse()
+	for rid in rids:
+		render_device.free_rid(rid)
+
+static func blend_async(framebuffer : Dictionary, src_texture : RID, src_offset : Vector2i, dst_texture : RID, dst_offset : Vector2i, color : Color, rect : Rect2i = Rect2i(Vector2i.ZERO, framebuffer.size), blend_mode : BlendMode = BlendMode.Normal, wrap_rect := Rect2i(0, 0, 0, 0)):
+	var rids : Array[RID] = []
+
+	# TODO: Maybe not use arbitrary min/max int?
+	var wrap_rect_min := Vector2i(-100000, -100000)
+	var wrap_rect_max := Vector2i(100000, 100000)
+	if wrap_rect.size.x > 0:
+		wrap_rect_min.x = wrap_rect.position.x
+		wrap_rect_max.x = wrap_rect.position.x + wrap_rect.size.x
+	if wrap_rect.size.y > 0:
+		wrap_rect_min.y = wrap_rect.position.y
+		wrap_rect_max.y = wrap_rect.position.y + wrap_rect.size.y
+
+	var constants := PackedByteArray()
+	constants.resize(64)
 	constants.encode_s32(0, src_offset.x)
 	constants.encode_s32(4, src_offset.y)
 	constants.encode_s32(8, dst_offset.x)
@@ -584,6 +681,10 @@ static func blend_async(framebuffer : Dictionary, src_texture : RID, src_offset 
 	constants.encode_float(36, color.g)
 	constants.encode_float(40, color.b)
 	constants.encode_float(44, color.a)
+	constants.encode_s32(48, wrap_rect_min.x)
+	constants.encode_s32(52, wrap_rect_min.y)
+	constants.encode_s32(56, wrap_rect_max.x)
+	constants.encode_s32(60, wrap_rect_max.y)
 
 	var sampler_state := RDSamplerState.new()
 	var sampler = render_device.sampler_create(sampler_state)

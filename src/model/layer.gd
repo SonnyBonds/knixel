@@ -16,6 +16,9 @@ class RenderOutput extends RefCounted:
 func _init():
 	super()
 
+func get_size() -> Vector2i:
+	return Vector2i.ZERO
+
 func render(_framebuffer_pool : ImageProcessor.FramebufferPool) -> RenderOutput:
 	assert(false)
 	return Layer.RenderOutput.new()

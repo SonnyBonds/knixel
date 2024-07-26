@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://ccn6xw45ptqxg"
+path="res://.godot/imported/apply_tiling.glsl-9703ebeed2bc9db31a8bc657f73c105f.res"
+
+[deps]
+
+source_file="res://src/shaders/operations/apply_tiling.glsl"
+dest_files=["res://.godot/imported/apply_tiling.glsl-9703ebeed2bc9db31a8bc657f73c105f.res"]
+
+[params]
+

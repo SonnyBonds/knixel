@@ -6,6 +6,8 @@ layout( push_constant ) uniform constants
     float radius;
     ivec2 direction;
     ivec2 offset;
+    ivec2 src_size;
+    ivec4 wrap_rect;
 } inputs;
 
 layout(location = 0) out vec2 uv;
@@ -31,6 +33,8 @@ layout( push_constant ) uniform constants
     float radius;
     ivec2 direction;
     ivec2 offset;
+    ivec2 src_size;
+    ivec4 wrap_rect;
 } inputs;
 
 float gaussian(float x, float sigma)
@@ -47,9 +51,14 @@ void main()
     vec4 result = vec4(0.0);
     
     int intRadius = int(ceil(inputs.radius));
+    ivec2 wrap_size = inputs.wrap_rect.zw - inputs.wrap_rect.xy;
     for(int i = -intRadius; i <= intRadius; ++i)
     {
-        vec4 tex_sample = texelFetch(src_tex, ivec2(gl_FragCoord.xy) - inputs.offset + inputs.direction*i, 0);
+        ivec2 src_coord = ivec2(gl_FragCoord.xy) - inputs.direction*i;
+        src_coord -= inputs.offset; 
+        src_coord = ivec2(mod(src_coord - inputs.wrap_rect.xy, wrap_size)) + inputs.wrap_rect.xy;
+        vec2 inside = step(ivec2(0, 0), src_coord) * (1.0 - step(inputs.src_size, src_coord));
+        vec4 tex_sample = texelFetch(src_tex, src_coord, 0) * inside.x * inside.y;
         float gauss_weight = gaussian(float(i), sigma);
         vec4 weight = gauss_weight * vec4(tex_sample.aaa, 1.0);
         result += tex_sample * weight;
