@@ -63,7 +63,7 @@ func _gui_event(event: InputEvent) -> void:
 	if button:
 		if button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
 			var hover := _hovers_selection(button.position)
-			if hover:
+			if hover and not button.shift_pressed and not button.alt_pressed:
 				canvas.document.start_undo_block()
 				_drag_start = button.position
 				_drag_pos = _drag_start
